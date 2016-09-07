@@ -1,0 +1,7 @@
+-cpu=rx600
+-signed_char
+-lang=c
+-output=obj="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\feedback.obj"
+-debug
+"C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\tutrobo\feedback.c"
+-nologo

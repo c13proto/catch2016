@@ -1,0 +1,17 @@
+328P
+
+BODLEVEL = DISABLED
+RSTDISBL = [ ]
+DWEN = [ ]
+SPIEN = [X]
+WDTON = [ ]
+EESAVE = [ ]
+BOOTSZ = 2048W_3800
+BOOTRST = [ ]
+CKDIV8 = [ ]
+CKOUT = [ ]
+SUT_CKSEL = EXTXOSC_8MHZ_XX_258CK_14CK_4MS1
+
+EXTENDED = 0xFF (valid)
+HIGH = 0xD9 (valid)
+LOW = 0xCE (valid)

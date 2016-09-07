@@ -1,0 +1,7 @@
+-cpu=rx600
+-signed_char
+-lang=c
+-output=obj="C:\Users\idry7lash629\Desktop\catch2016\catch2016\catch2016\Debug\vecttbl.obj"
+-debug
+"C:\Users\idry7lash629\Desktop\catch2016\catch2016\catch2016\vecttbl.c"
+-nologo

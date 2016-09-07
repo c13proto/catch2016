@@ -1,0 +1,180 @@
+/********************************************************/
+//
+//  概要
+//      マシン移動制御関連
+//  作成者
+//		TUTrobo
+//
+/********************************************************/
+
+#include "setup.h"		//マイコンの設定
+//#include "io.h"			//トークン距離の設定
+
+//グローバル変数宣言//
+struct comand_information cmd_inf;			// comArrayの値を受け取る型
+struct machine_condition macond;			// マシン情報が格納されている
+struct gyro_condition gcond;				// ジャイロの状態
+unsigned short task_number;					// task_controlで使用
+unsigned char task_mode;					// taskのモード選択で使用
+
+//オリジナルK//
+double ratio;
+
+/********************************************************/
+//  名前      
+//		gear
+//  概要
+// 		マシン移動制御関連
+//  機能説明
+//		モータのゲインを変更
+//  パラメタ説明
+//		なし
+//  戻り値
+//		res		コマンドの判定
+//  作成者
+//		TUTrobo
+//
+/********************************************************/
+int gear(int gear_number)
+{
+	int res = CMD_END;
+
+	const DOUBLE_GEAR diff[]  = {
+								  //{   Kp,   Ki,   	Kd}
+//									{0.001,0.001,   0.0001},
+//									{0.001,  0.0,  0.00012},
+									{0.001,  0.0,  	0.0002},
+									{  1.0,  0.0,  	   0.0},
+									{  0.5,  0.0,  	   0.0},
+									{  0.2,  0.0,  	   0.0},
+									{  0.7,  0.0,      0.0},
+								 };
+
+
+
+
+	
+	const DOUBLE_GEAR speed[] = {
+								   //{   Kp,   Ki,   Kd}
+									 {0.002,  0.0,  0.0},
+									 {0.002,  0.0,  0.0},
+									 {0.002,  0.0,  0.0},
+									 {0.002,  0.0,  0.0},
+								 };
+								 	
+	macond.diff_gear.Kp  = diff[gear_number].Kp;
+	macond.diff_gear.Ki  = diff[gear_number].Ki;
+	macond.diff_gear.Kd  = diff[gear_number].Kd;
+
+	macond.speed_gear.Kp = speed[gear_number].Kp;
+	macond.speed_gear.Ki = speed[gear_number].Ki;
+	macond.speed_gear.Kd = speed[gear_number].Kd;
+
+	return res;
+}
+
+
+/********************************************************/
+//  名前      
+//		cmd_init
+//  概要
+// 		マシン移動制御関連
+//  機能説明
+//		コマンドの初期設定
+//  パラメタ説明
+//		なし
+//  戻り値
+//		なし
+//  作成者
+//		K.Ishimori @ TUTrobo
+//
+/********************************************************/
+void cmd_init(void)				
+{
+	task_number = 0;
+	task_mode = mode_control();
+	cmd_inf = cmdArray[task_mode][task_number];			
+}
+
+
+/********************************************************/
+//  名前      
+//		mode_control
+//  概要
+// 		マシン移動制御関連
+//  機能説明
+//		コマンドの選択
+//  パラメタ説明
+//		なし
+//  戻り値
+//		mode		モード選択
+//  作成者
+//		K.Ishimori @ TUTrobo
+//
+/********************************************************/
+char mode_control(void)				
+{
+	char flag = 0;
+	
+	if(mode() == 'R')
+	{
+		flag = 0;
+	}
+	if(mode() == 'B')
+	{
+		flag = 1;
+	}
+
+	return flag;
+}
+
+
+/********************************************************/
+//  名前      
+//		task_control
+//  概要
+// 		マシン移動制御関連
+//  機能説明
+//		場合わけをしてpathの動きを行う
+//  パラメタ説明
+//		なし
+//  戻り値
+//		なし
+//  作成者
+//		K.Ishimori @ TUTrobo
+//
+/********************************************************/
+void task_control(void)		
+{
+	int cmd_res = 0;
+	static char range_flag = 0;
+	char read_duty = 0;				// 走行系コマンドかどうか
+	char read_theta = 0;
+	static double base = 0.0;		// 前回のコマンドで指定したduty
+	static char maplice_count = 0;
+		
+	switch(cmd_inf.name)
+	{
+		default:
+				break;
+	}
+	
+//	pwm_set_ctrl(macond.duty.l,macond.duty.r);	
+	
+	if(cmd_res == CMD_END)
+	{
+		task_number++;	
+		cmd_inf = cmdArray[task_mode][task_number];
+		range_flag = 0;
+		
+//		printf("CHENG_CMD\n");
+		
+	}
+	else if(cmd_res == CMD_END_ALL)
+	{
+		
+//		printf("TASK_ALL_END\n");	
+		
+	}
+	
+}

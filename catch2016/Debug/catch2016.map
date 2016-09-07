@@ -1,0 +1,101 @@
+Optimizing Linkage Editor (V.10.02.00.000)        07-Sep-2016 20:41:26
+
+*** Options ***
+
+-subcommand=C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\catch2016.hlk
+-noprelink
+-rom=D=R,D_1=R_1,D_2=R_2
+-nomessage
+-list="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\catch2016.map"
+-nooptimize
+-start=B_1,R_1,B_2,R_2,B,R,SU,SI/01000,PResetPRG/0FFFF8000,C_1,C_2,C,C$*,D_1,D_2,D,P,PIntPRG,W*,L/0FFFF8100,FIXEDVECT/0FFFFFFD0
+-nologo
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\ad.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\auto.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\calc.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\cet.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\clock.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\cmt.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\common.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\comu2.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\control.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\controller.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\dbsct.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\enc.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\feedback.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\fld.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\interrupt.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\intprg.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\io.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\main.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\omuni.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\path.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\pwm.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\resetprg.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\sbrk.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\sci.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\sence.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\setup.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\table.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\vecttbl.obj"
+-input="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\wdt.obj"
+-library="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\catch2016.lib"
+-output="C:\Users\idry7lash629\Documents\GitHub\catch2016\catch2016\Debug\catch2016.abs"
+-end
+
+*** Error information ***
+
+** L1100 (W) Cannot find "SU" specified in option "start"
+
+*** Mapping List ***
+
+SECTION                            START      END         SIZE   ALIGN
+
+B_1
+                                  00001000  00001013        14   1
+R_1
+                                  00001014  00001085        72   1
+B_2
+                                  00001086  000010ab        26   2
+R_2
+                                  000010ac  000010b9         e   2
+B
+                                  000010bc  000017f3       738   4
+R
+                                  000017f4  00001ac7       2d4   4
+SI
+                                  00001ac8  00001dc7       300   4
+PResetPRG
+                                  ffff8000  ffff8029        2a   1
+C_1
+                                  ffff8100  ffff8124        25   1
+C_2
+                                  ffff8126  ffff8126         0   2
+C
+                                  ffff8128  ffff83bf       298   4
+C$DSEC
+                                  ffff83c0  ffff83e3        24   4
+C$BSEC
+                                  ffff83e4  ffff83fb        18   4
+C$VECT
+                                  ffff83fc  ffff87fb       400   4
+D_1
+                                  ffff87fc  ffff886d        72   1
+D_2
+                                  ffff886e  ffff887b         e   2
+D
+                                  ffff887c  ffff8b4f       2d4   4
+P
+                                  ffff8b50  ffffd7d5      4c86   1
+PIntPRG
+                                  ffffd7d6  ffffd97d       1a8   1
+W_1
+                                  ffffd97e  ffffd97e         0   1
+W_2
+                                  ffffd97e  ffffd97e         0   2
+W
+                                  ffffd980  ffffd980         0   4
+L
+                                  ffffd980  ffffda3b        bc   4
+FIXEDVECT
+                                  ffffffd0  ffffffff        30   4

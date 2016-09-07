@@ -1,0 +1,112 @@
+/********************************************************/
+//
+//  概要
+//      ポート関連
+//  作成者
+//		K.ishimori @ TUTrobo
+//
+/********************************************************/
+
+#ifndef __IO_H__
+#define __IO_H__
+#define SET_P_INPUT_PIN(port,pin) { port##.DDR.BIT.B##pin =0; port##.PCR.BIT.B##pin =1; port##.ICR.BIT.B##pin  =1;}
+//ex)SET_PULL_INPUT(PORTE,7); // プルアップ付入力設定
+#define SET_OUTPUT_PIN(port,pin) { port##.DDR.BIT.B##pin =1;}
+#define SET_P_INPUT(port) { port##.DDR.BYTE =0x00; port##.PCR.BYTE =0xFF; port##.ICR.BYTE  =0xFF;}
+#define SET_INPUT(port) { port##.DDR.BYTE =0x00; port##.ICR.BYTE  =0xFF;}
+#define SET_OUTPUT(port) { port##.DDR.BYTE =0xFF;}
+#define INPUT_PIN(port,pin) {port##.PORT.BIT.B##pin}
+
+
+
+#define OUTPUT_PIN(port,pin) (port##.DRL.BIT.B##pin)
+
+#define AIR_RIGHT_HAND 			OUTPUT_PIN(PORTE,4)
+#define AIR_LEFT_HAND 			OUTPUT_PIN(PORTE,7)
+#define AIR_RIGHT_TOWER 		OUTPUT_PIN(PORTE,5)
+#define AIR_LEFT_TOWER 			OUTPUT_PIN(PORTE,6)
+
+#define POWER_OUT				OUTPUT_PIN(PE,3)
+#define BUZZER_OUT				OUTPUT_PIN(PE,15)
+
+#define MODE_IN					INPUT_PIN(PORTE,0)
+#define FISH_FRONT 				INPUT_PIN(PORTB,3)
+#define L_HOLD_LIMIT 			INPUT_PIN(PORTA,1)
+#define L_UNHOLD_LIMIT 			INPUT_PIN(PORTA,0)
+#define AIR_R_UNDER_LIMIT 		INPUT_PIN(PORTF,0)
+#define AIR_R_UP_LIMIT   		INPUT_PIN(PORTF,1)
+#define AIR_L_UNDER_LIMIT 		INPUT_PIN(PORTF,3)
+#define AIR_L_UP_LIMIT   		INPUT_PIN(PORTF,2)
+#define R_TOWER_UNDER_LIMIT 	INPUT_PIN(PORTB,1)
+#define L_TOWER_UNDER_LIMIT 	INPUT_PIN(PORTB,2)
+
+#define LEAF_COLLECT_HAND_PIN 	INPUT_PIN(PORTE,7) // PE.DRL.BIT.B7
+#define LEAF_ESTA_HAND_PIN 		INPUT_PIN(PORTE,6) // PE.DRL.BIT.B6
+
+#define FRONT_SIFT_PWM		    MTU20.TGRB
+#define L_ARM_PWM               MTU20.TGRC
+#define FISH_PWM				MTU20.TGRA
+#define O_PWM					MTU23.TGRA
+#define L_PWM					MTU23.TGRC
+#define R_PWM					MTU24.TGRA
+#define SERVO_PWM 				MTU24.TGRC
+
+#define ON 1
+#define OFF 0
+
+
+/********************************************************/
+//  TUTrobo
+//
+//  概要
+//      ポート関連 プロトタイプ宣言
+/********************************************************/
+void power_init(void);							// モータ・エアーの電源供給用の初期設定
+void buzzer_init(void);							// BUZZERの初期設定
+void led_init(void);							// LEDの初期設定
+void mode_init(void);							// モード選択の初期設定
+void button_init(void);							// ボタンの初期設定
+void limit_init(void);							// LIMITの初期設定
+
+void front_limit_init(void);					// マシンの前のリミットの初期設定
+void back_limit_init(void);						// マシンの後のリミットの初期設定
+
+void io_init(void);		 						// PINの初期設定
+
+//void buzzer_on(void);							// BUZZERをONにする
+//void buzzer_off(void);							// BUZZERをOFFにする
+
+//void power_on(void);							// 電源供給を行う
+//void power_off(void);							// 電源供給を行わない
+
+void led_on(void);								// LEDをONにする
+void led_off(void);								// LEDをOFFにする
+void led_ctrl(char number);						// LEDの点き方をコントロールする
+
+char mode(void);								// モード選択
+
+char button(void);								// ボタン認識
+
+char limit(void);								// リミット認識
+
+/********************************************************/
+//  TUTrobo
+//
+//  概要
+//      ポート関連 定数定義
+/********************************************************/
+#define OPEN	1
+#define CLOSE	0
+
+/*----------------------------------------------*/
+void motor_o(double raw_duty);					// MOTOR_oの設定
+void motor_l(double raw_duty);					// MOTOR_lの設定
+void motor_r(double raw_duty);					// MOTOR_rの設定
+void motor_servo(int state);					// SERVOの設定
+void leaf_collect_hand(char state);				// AIR関数(リーフ回収ハンド)
+void leaf_esta_hand(char state);				// AIR関数(リーフ設置ハンド)
+void motor_L_arm(double raw_duty);				//Lアーム
+void motor_fish(double raw_duty);				//釣竿
+//void motor_tower_L_stopper(double raw_duty);	//Lタワーストッパー
+void motor_front_shift(double raw_duty);		//全体を前に出すやつ
+#endif // __IO_H__

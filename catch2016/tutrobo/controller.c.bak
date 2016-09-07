@@ -1,0 +1,1257 @@
+/********************************************************/
+//
+//  概要
+//      コントローラー設定
+//  作成者
+//		K.ishimori @ TUTrobo
+//
+/********************************************************/
+
+#include "setup.h"		// マイコンの設定
+
+int 	ad_data[4];
+/*
+unsigned char half_1, half_2;
+unsigned char duty_L, degree_L, duty_R, degree_R;
+unsigned char D_direction_R, D_direction_L;
+unsigned char D_direction_U, D_direction_D;
+unsigned char sankaku, maru, batsu, shikaku;
+unsigned char L1, R1, L2, R2;
+*/
+	
+int fishing_rod,	//モーターに渡すdutyを収納する型
+	l_arm;
+		
+			
+double	front_direction,//rad
+		choose_degree,//マシンの絶対座標選択のため(36000)
+		kaiten,
+		direction_rad,
+		direction_duty;
+		
+double set_duty_debug[6];
+		
+//		old_kaiten,
+//		old_direction_duty;
+
+char tower_L_status=air_OPEN,//初期状態
+	 tower_R_t_status=air_OPEN,//初期状態
+	 tower_R_b_status=air_OPEN,
+	 hand_R_status=air_UP,
+	 hand_L_status=air_UP;
+	 
+double 	fishing_rod_position,L_arm_position;//アームの初期位置からの距離を保存
+int 	L_arm_offset  		= 343;//Lアーム初期位置のAD変換値(リーフを取れる位置を初期位置とする)
+int		fishing_rod_offset	= 841;//釣竿初期位置のAD変換値(リーフを取れる位置を初期位置とする)
+
+char hand_R_position,//Rハンドの場所
+	 hand_L_position,//Lハンドの場所
+	 servo_position;//サーボの場所
+	//赤ゾーン経路				x		y			角度		釣竿		
+auto_route red = {{		{6450.0},	{-4850.0},	{-88.0},		 {0.0}},
+					  {	{	4800.0},	{	-3527.0},	{ 61.0},	{  1530.0}},
+					  {	{	4243.9},	{	-3381.2},	{ 61.0},	{   900.0}},
+					  {	{	2967.6},	{	-1965.7},	{ 61.0},	{  1314.0}},
+					  {	{	 208.3},	{	 -803.8},	{ 70.0},	{	 0.0}},
+					  {	{	3269.0},	{	 3415.5},	{180.0},	{	 0.0}},//苗木受け取り位置
+					  {	{	3180.5},	{	 2721.2},	{230.8},	{	 0.0}}//苗木発射位置
+};
+	
+	
+auto_route blue={{		6293.2,		 4860.6,	 86.0,		 0.0},
+					{		5140.1,		 3671.2,	-56.3,	  1520.0},
+					{		4567.7,		 3425.7,	-55.9,	   845.6},
+					{		2894.5,		 1616.3,	-31.8,	  1417.2},
+					{		 525.1,		  351.7,   -133.6,		 0.0},
+					{		3200.0,		-2700.2,   -180.0,		 0.0},
+					{		3400.0,		-3100.0,   -221.2,		 0.0}//苗木発射位置
+};
+
+/********************************************************/
+//  名前      
+//		recieve_data_input
+//	概要
+//		データ受信関連
+//	機能説明
+//		プレステコンから受信
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		D_direction.Yamamuro @ TUTrobo
+/********************************************************/
+void recieve_data_input(void)
+{
+	int cmd_loop;
+/*	
+	HALF_1	= (recv0[0] >> 8);
+	half_2	=  recv0[0];
+	
+	duty_L	= (recv0[1] >> 8);	// dutyを格納
+	degree_L=  recv0[1];			// 角度（0-255度）を格納
+	
+	duty_R 	= (recv0[2] >> 8);	// dutyを格納
+	degree_R=  recv0[2];			// 角度（0-255度）を格納
+
+	D_direction_R 	= (recv0[3] >> 8);
+	D_direction_L 	=  recv0[3];
+
+	D_direction_U 	= (recv0[4] >> 8);
+	D_direction_D 	=  recv0[4];
+	
+	PSCON_PRE_SANKAKU = (recv0[5] >> 8);
+	PSCON_PRE_MARU 	=  recv0[5];
+	
+	PSCON_PRE_BATSU 	= (recv0[6] >> 8);
+	PSCON_PRE_SHIKAKU =  recv0[6];
+	
+	PSCON_PRE_L1 		= (recv0[7] >> 8);
+	PSCON_PRE_R1 		=  recv0[7];
+	
+	PSCON_PRE_L2 		= (recv0[8] >> 8);
+	PSCON_PRE_R2 		=  recv0[8];
+	
+/*	while(1)//デジタルモードになるのを待つ。（効果不明）
+	{
+		static char error=0;
+		if(error==0 && maru==0 && half_1 == 255 && batsu == 0)error = 1;
+		if(error==1)break;
+	}
+*/	
+//	printf("dut=%d\n",duty_L);
+
+	controller_data();
+	
+	set_duty();		//	値をdutyに変換
+
+}
+
+/********************************************************/
+//  名前      
+//		set_duty
+//	概要
+//		データ受信関連
+//	機能説明
+//		プレステコンの値をdutyに変換。
+//
+//	操作方法
+//		変数にdutyを代入
+//
+//	作成者
+//		D_direction.Yamamuro @ TUTrobo
+/********************************************************/
+void set_duty(void)
+{
+	
+	how_about_sensor();//センサーの状態を確認
+	suspension_system();//足廻り関係	
+	fishing_rod_system();//釣竿関係
+	l_arm_system();//Lアーム関係
+	
+	auto_suspension_system();//自動化関係
+	
+	r_hand_system();//Rハンド関係
+	l_hand_system();//Lハンド関係
+	r_tower_system();//Rタワー関係
+	l_tower_system();//Lタワー関係
+	
+	//アーム系デバッグのため
+	set_duty_debug[0]=fishing_rod_position;
+	set_duty_debug[1]=L_arm_position;
+	set_duty_debug[2]=direction_rad;
+
+}
+
+/********************************************************/
+//  名前      
+//		manual_cntl
+//	概要
+//		手動制御関連
+//	機能説明
+//		プレステコンデータからdutyを計算しPWMを出力
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		S.Baba @ TUTrobo
+/********************************************************/
+void input_PWM_ctrl(void)
+{
+	
+	OMNI_DUTY omni;
+	static int r_hand_count_d=0,r_hand_count_u=0,
+			   l_hand_count_d=0,l_hand_count_u=0;
+	
+	static char old_hand_R_status,old_hand_L_status;
+	
+	int hand_wide_interval=8;//80ms
+
+
+	
+///////////////オムニ関連///////////////////////////////////////////////////////////////////////////////////////	
+	
+	omni = omni_moters_duty3(	front_direction,75.0,direction_duty,	//dutyを計算(macond_duty_omniに格納)
+								direction_rad,kaiten);	//kaitenには最大30%入っている	
+																					
+	pwm_set_omni_ctrl(omni);	//PWMをセット
+	
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////Airとサーボ関連///////////////////////////////////////////////////////////////////////////////////////	
+	if(hand_R_status==air_UP)//右ハンド上げるとき
+	{
+		r_hand_count_d=0;
+		if(r_hand_count_u<500)r_hand_count_u++;
+		AIR_RIGHT_HAND_WIDE=0;//右ハンド閉じる
+		if(r_hand_count_u>hand_wide_interval)AIR_RIGHT_HAND = 0;//インターバル秒後右ハンド上げる
+	}
+	else//右ハンド下げるとき
+	{
+		if(r_hand_count_d<500)r_hand_count_d++;
+		r_hand_count_u=0;
+		AIR_RIGHT_HAND_WIDE=1;//右ハンド開ける
+	//	if(r_hand_count_d>hand_wide_interval)AIR_RIGHT_HAND = 1;
+		AIR_RIGHT_HAND = 1;//右ハンド下げる
+	}
+
+	if(hand_L_status==air_UP)//左ハンド上げるとき
+	{
+		l_hand_count_d=0;
+		if(l_hand_count_u<500)l_hand_count_u++;
+		AIR_LEFT_HAND_WIDE=0;//右ハンド閉じる
+		if(l_hand_count_u>hand_wide_interval)AIR_LEFT_HAND = 0;//インターバル秒後左ハンド上げる
+	}
+	else//左ハンド下げるとき
+	{
+		if(l_hand_count_d<500)l_hand_count_d++;
+		l_hand_count_u=0;
+		AIR_LEFT_HAND_WIDE=1;//左ハンド開ける
+	//	if(l_hand_count_d>hand_wide_interval)AIR_LEFT_HAND = 1;
+		AIR_LEFT_HAND = 1;//左ハンド下げる
+	}
+
+
+	if(tower_R_b_status == air_CLOSE)//右タワー下側（今までエアーでやっていたので、それと同じ事をサーボにも割り当てている）
+	{
+		SERVO_B_PWM=SERVO_B_CLOSE;//サーボに司令
+	}
+	else
+	{
+		SERVO_B_PWM=SERVO_B_OPEN;
+		if(fishing_rod_position>100.0)SERVO_B_PWM=SERVO_B_OVER;//より大きく開く
+	}
+
+	if(tower_R_t_status == air_OPEN)AIR_RIGHT_TOWER_UP = 0;//右タワー上側
+	else AIR_RIGHT_TOWER_UP = 1;
+
+
+	if(tower_L_status == air_OPEN)AIR_LEFT_TOWER = 0;//左タワー
+	else AIR_LEFT_TOWER = 1;
+
+
+//printf("%d\n",tower_L_status);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////アーム関連///////////////////////////////////////////////////////////////////////////////////////
+	
+	motor_fish((double)fishing_rod);											//釣竿ハンド動作
+
+	motor_L_arm((double)l_arm);													//Lアーム動作
+//	motor_servo(servo_status);															//サーボ
+//	motor_front_shift((double)front_shift);								//全体を前にシフトするやつ
+	
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+}
+
+/********************************************************/
+//  名前      
+//		how_about_sensor
+//	概要
+//		手動制御関連
+//	機能説明
+//		センサーの状態を確認
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void how_about_sensor(void)
+{
+	ad_load_4_7(ad_data);	
+	L_arm_position = (double)(ad_data[1]-L_arm_offset)*480.0*PI/1023.0;
+	fishing_rod_position = -(double)(ad_data[2]-fishing_rod_offset)/1023.0*250.0*10.0;	
+	
+	servo_position=how_about_servo();
+	how_about_hand();
+
+}
+
+/********************************************************/
+//  名前      
+//		how_about_servo
+//	概要
+//		手動制御関連
+//	機能説明
+//		サーボの状態を確認
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+char how_about_servo(void)
+{
+	char servo_pos;
+	static int servo_open_count=0;
+	static int servo_close_count=0;
+	int servo_interval=50;//サーボに指示を出して0.5秒後にそのポジションになったと仮定する
+	
+	if(tower_R_b_status==air_OPEN)
+	{
+		if(servo_open_count<500)servo_open_count++;
+		servo_close_count=0;
+		
+		if(servo_open_count>servo_interval)servo_pos=air_OPEN;
+	}
+	else if(tower_R_b_status==air_CLOSE)
+	{
+		servo_open_count=0;
+		if(servo_close_count<500)servo_close_count++;
+		
+		if(servo_close_count>servo_interval)servo_pos=air_CLOSE;
+	}
+	
+	return servo_pos;
+}
+
+/********************************************************/
+//  名前      
+//		how_about_hand
+//	概要
+//		手動制御関連
+//	機能説明
+//		サーボの状態を確認
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void how_about_hand(void)
+{
+	static int r_u_timer,r_d_timer,
+			   l_u_timer,l_d_timer;
+			   
+	char interval=15;//エアー上下の信号出してからのインターバル
+	char up_interval=15;//ハンド上げるときにとっているインターバル
+/*	
+	//リミットでの判定-----------------------------------------------------------
+	//Rハンドについて
+	if(AIR_R_UNDER_LIMIT==0)		hand_R_position=air_DOWN;//下リミットに触れてる
+	else if(AIR_R_UP_LIMIT==0)	hand_R_position=air_UP;//上リミットに触れてる
+	else hand_R_position=air_MIDDLE;//下リミットにも上リミットにも触れていない
+	
+	//Lハンドについて
+	if(AIR_L_UNDER_LIMIT==0)		hand_L_position=air_DOWN;//下リミットに触れてる
+	else if(AIR_L_UP_LIMIT==0)	hand_L_position=air_UP;//上リミットに触れてる
+	else hand_L_position=air_MIDDLE;//下リミットにも上リミットにも触れていない
+	//----------------------------------------------------------------------------
+*/	
+	
+	//timerでの判定--------------------------------------------------------------
+	if(hand_R_status==air_UP)//Rハンドについて
+	{
+		if(r_u_timer<500)r_u_timer++;
+		r_d_timer=0;
+		if(r_u_timer>(interval+up_interval))hand_R_position=air_UP;
+		else hand_R_position=air_MIDDLE;
+	}
+	else
+	{
+		r_u_timer=0;
+		if(r_d_timer<500)r_d_timer++;
+		if(r_d_timer>interval)hand_R_position=air_DOWN;
+		else hand_R_position=air_MIDDLE;
+	}
+	
+	if(hand_L_status==air_UP)//Lハンドについて
+	{
+		if(l_u_timer<500)l_u_timer++;
+		l_d_timer=0;
+		if(l_u_timer>(interval+up_interval))hand_L_position=air_UP;
+		else hand_L_position=air_MIDDLE;
+	}
+	else
+	{
+		l_u_timer=0;
+		if(l_d_timer<500)l_d_timer++;
+		if(l_d_timer>interval)hand_L_position=air_DOWN;
+		else hand_L_position=air_MIDDLE;
+	}
+	//-----------------------------------------------------------------------
+	
+
+}
+
+/********************************************************/
+//  名前      
+//		suspension_system
+//	概要
+//		手動制御関連
+//	機能説明
+//		足回りのdutyを入力
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void suspension_system(void)
+{
+
+//足回り関係----------------------------------------------------------------------------------------------------------------	
+
+	//方向成分duty---------------------------
+	
+	direction_duty=(double)DUTY_L;
+	if(PSCON_PRE_R1>0)direction_duty=DUTY_L/2.5;//R1ボタンを押している間はMAXduty25
+	if(HALF_1==253)direction_duty=0.0;//L3を押されたらdutyは0にする（アナログスティックぐりぐりできるように）
+	
+	//---------------------------------------
+
+	//方向角度(rad)
+	direction_rad=DEGREE_L*2*PI/255.0;
+	if(DEGREE_L==63)direction_rad=PI/2.0;//255分解能のため計算の過程で微妙に角度ズレるので、十字方向だけ補正
+	if(DEGREE_L==127)direction_rad=PI;
+	if(DEGREE_L==191)direction_rad=PI*3.0/2.0;
+	
+
+	
+	//回転成分duty----------------------------------------------------------------------------------------
+	kaiten=(PSCON_PRE_L2-PSCON_PRE_R2)*50.0;//分解能3段階,(L2-R2)は-2～2の値が帰ってくる。L2とR2は分解能が他と違うことに注意
+	if(HALF_1==253 || PSCON_PRE_R1>0)kaiten*=(1.0/4.5);
+	if(PSCON_PRE_L2>0 && PSCON_PRE_R2>0)kaiten=0.0;//L2とR2両方押されているときはduty0
+
+	//-----------------------------------------------------------------------------------------------
+	
+	//マシンの絶対座標選択---------------------------------------------------------------------------------
+//	if(HALF_1==251 && duty_R==100)choose_degree=degree_R*360.0/255.0;//最初の絶対座標から見て右スティックで倒した方向が前
+	if(HALF_1==251)
+	{
+		choose_degree=(double)m_angle*1.0;//;macond.t_theta;//右スティックのボタンを押したら現在の方向が前
+		if(DUTY_R>=90)choose_degree=(double)m_angle+18000.0;//macond.t_theta+180.0;//右スティックを押して方向を倒すと、現在の後ろ方向が前
+	}
+	front_direction=((double)m_angle-choose_degree)*PI/18000.0;
+	//------------------------------------------------------------------------------------------------------
+}
+
+
+/********************************************************/
+//  名前      
+//		fishing_rod_system
+//	概要
+//		手動制御関連
+//	機能説明
+//		釣竿のdutyを入力
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void fishing_rod_system(void)
+{
+	static int timer=0;
+
+	if(HALF_1!=251 && DUTY_R>20)//右アナログスティックボタンが押されていない、かつdutyを出しているとき
+	{
+		
+		if((DEGREE_R*360.0/255.0) >= 120 && (DEGREE_R*360.0/255.0) <= 240)//右アナログスティックを下に倒した時
+		{
+			fishing_rod=0;
+			if(DUTY_R>30)fishing_rod=-10;
+			if(DUTY_R>50)fishing_rod=-20;
+			if(DUTY_R==100)fishing_rod=-50;
+			if(fishing_rod_position<=0.0)fishing_rod=2;//手前方向のリミット(ポテンショ)
+			if(PSCON_PRE_R1>0 && DUTY_R>50)fishing_rod = PID_control(900.0,fishing_rod_position,95,0.09,0.001,0.085,2);//R1を押しながら下に倒すと手前のリーフ置き場に自動で合わせる
+		}
+		else if( ((DEGREE_R*360.0/255.0) >= 0 && (DEGREE_R*360.0/255.0) <= 60) || (DEGREE_R*360.0/255.0) >= 285)//上に倒した時
+		{
+			fishing_rod=0;
+			if(DUTY_R>30)fishing_rod=10;
+			if(DUTY_R>50)fishing_rod=20;
+			if(DUTY_R==100)fishing_rod=30;
+			if(fishing_rod_position>=1500.0)fishing_rod=0;//奥方向のリミット(ポテンショ)
+			if(PSCON_PRE_R1>0 && DUTY_R>50)fishing_rod=PID_control(1537.0,fishing_rod_position,95,0.095,0.0,0.075,2);//R1を押しながら上に倒すと奥のリーフ置き場に自動で合わせる
+		}
+		else if( ((DEGREE_R*360.0/255.0) > 60 && (DEGREE_R*360.0/255.0) < 120))//左に倒した時
+		{
+			if(PSCON_PRE_R1>0 && DUTY_R>50)fishing_rod=PID_control(1300.0,fishing_rod_position,95,0.15,0.0,0.075,2);//R1を押しながら左に倒すとリーフ置き場3に自動で合わせる
+		}
+		
+		//if(FISH_FRONT==0 && fishing_rod>0)fishing_rod=0;//リミットが入ってdutyが手前側にかかっているときは止める
+		if(hand_R_position!=air_DOWN)fishing_rod=0;
+		if(fishing_rod_position<100.0 && servo_position!=air_CLOSE)fishing_rod=0;
+	}
+	else 
+	{
+		fishing_rod=0;
+		timer=0;
+	}
+	//----------------------------------------------------------------------------------------------------------------
+}
+
+/********************************************************/
+//  名前      
+//		l_arm_system
+//	概要
+//		手動制御関連
+//	機能説明
+//		Lアームのdutyを入力
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void l_arm_system(void)
+{
+	if(D_direction_U-D_direction_D!=0 && ((HALF_1>>3)&0x1)!=0 && PSCON_PRE_L1==0)//スタートボタンを押している時、L1を押している時を除く
+	{	
+		static int t=0;//カウント用		
+//		tower_L_status=air_CLOSE;//Lアームを動かすときはLタワーを閉じる
+//		hand_L_status=air_DOWN;//Lアームを動かす時はLハンドを下げる
+
+		if((D_direction_U-D_direction_D)>0)l_arm=15;
+		if((D_direction_U-D_direction_D)>100)l_arm=30;
+		if((D_direction_U-D_direction_D)<0)l_arm=-15;
+		if((D_direction_U-D_direction_D)<-100)l_arm=-30;
+
+		if(PSCON_PRE_R1!=0)//R1押しながらで半自動
+		{
+		if((D_direction_U-D_direction_D)>0)l_arm=PID_control(470.0,L_arm_position,95,0.2,0.0,0.2,0);
+		if((D_direction_U-D_direction_D)<0)l_arm=PID_control(0.0,L_arm_position,30,0.5,0.0,0.5,0);
+		}
+		
+		if(L_arm_position>=460 && l_arm>0)l_arm=0;//ポテンショ利用したリミット
+		if(L_arm_position<=5   && l_arm<0)l_arm=0;
+		if(hand_L_position!=air_DOWN  && ABS(l_arm)>0)//Lハンドを上げている状態でLアームを動かさないようにする
+		{
+			hand_L_status=air_DOWN;
+			if(t<50)l_arm=0;//もしハンドが下りていなかったら約0.5秒はアームを動かさない
+			t++;
+
+		}else t=0;
+//		printf("%d\n",l_arm);
+		
+	}else l_arm=0;
+	//----------------------------------	
+}
+
+/********************************************************/
+//  名前      
+//		r_hand_system
+//	概要
+//		手動制御関連
+//	機能説明
+//		Lアームのdutyを入力
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void r_hand_system(void)
+{
+	static unsigned char old_batsu;
+	static char leaf_get_flag=0;
+	
+	//基本的にはボタンが押されるたびに状態を反転。例外はif文で明記
+	//Rハンドについて--------------------------------------
+
+	
+	if(DUTY_R >5)
+	{
+		hand_R_status=air_DOWN;//釣竿動かそうとするときはハンド下げる
+		if(servo_position!=air_CLOSE && fishing_rod_position<100.0 && 
+		 ( ((DEGREE_R*360.0/255.0) >= 0 && (DEGREE_R*360.0/255.0) <= 60) || (DEGREE_R*360.0/255.0) >= 285))
+		 hand_R_status=air_UP;//釣竿初期状態から手動で前に出そうとしていて、サーボ閉じてなかったらハンドを上げたままにする
+	}
+	if(HALF_1==254)hand_R_status=air_DOWN;//セレクトが押されたら下げる
+	else if(old_batsu==0 && PSCON_PRE_BATSU>0)
+	{
+		hand_R_status *= -1;
+		if( (tower_R_t_status==air_CLOSE || tower_R_b_status==air_CLOSE) && hand_R_status==air_UP)//
+		{//もしRタワーを閉じた状態でリーフをあげようとしたら、Rタワーを開けるだけで、Rハンドは下げておく
+			tower_R_t_status=air_OPEN;
+			tower_R_b_status=air_OPEN;
+			hand_R_status =air_DOWN;
+		}
+
+	}
+/*	
+	if((hand_R_status==air_UP) && (R_TOWER_UNDER_LIMIT==0) && (hand_R_position==air_UP))
+		hand_R_status=air_DOWN;//ハンド上がってる状態でタワー下リミットとハンド上リミットにあたったら、ハンド下げる	
+	else if((hand_R_status==air_DOWN) && (R_TOWER_UNDER_LIMIT==0) && (hand_R_position==air_DOWN))
+		hand_R_status=air_UP;  //ハンドが下がっている状態でタワー下とハンド下リミットに触れていたら、ハンドを上げる
+*/
+
+		if((hand_R_status==air_UP) && (R_TOWER_UNDER_LIMIT==0) && (hand_R_position==air_UP))
+		{	
+			hand_R_status=air_DOWN;//ハンド上がってる状態でタワー下リミットとハンド上リミットにあたったら、ハンド下げる	
+			leaf_get_flag=1;
+		}
+		else if( leaf_get_flag==1 && hand_R_position==air_DOWN)
+		{
+			hand_R_status=air_UP;
+			leaf_get_flag=0;
+		}
+		else if((hand_R_status==air_DOWN) && (R_TOWER_UNDER_LIMIT==0) && (hand_R_position==air_DOWN))
+		{
+			hand_R_status=air_UP;  //ハンドが下がっている状態でタワー下とハンド下リミットに触れていたら、ハンドを上げる
+			leaf_get_flag=0;
+		}
+		else if((hand_R_status==air_UP) && (R_TOWER_UNDER_LIMIT==0) && (hand_R_position==air_UP))
+		{	
+			hand_R_status=air_DOWN;//ハンド上がってる状態でタワー下リミットとハンド上リミットにあたったら、ハンド下げる	
+			leaf_get_flag=1;
+		}
+
+
+	old_batsu=PSCON_PRE_BATSU;//過去の値としてPSコンの入力値を代入
+	
+}
+
+/********************************************************/
+//  名前      
+//		l_hand_system
+//	概要
+//		手動制御関連
+//	機能説明
+//		Lアームのdutyを入力
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void l_hand_system(void)
+{
+	static unsigned char old_shikaku;
+	static char leaf_get_flag=0;
+		//Lハンドについて----------------------------------
+
+
+	if(HALF_1==254)hand_L_status=air_DOWN;//セレクトが押されたら下げる
+	if(l_arm!=0)hand_L_status=air_DOWN;//Lアーム動かすときはハンド下げる
+	else if(old_shikaku==0 && PSCON_PRE_SHIKAKU>0 && ((HALF_1>>3)&0x1)!=0)//□が押され、スタートが押されていないとき
+	{
+		hand_L_status *= -1;
+		if(tower_L_status==air_CLOSE && hand_L_status==air_UP)
+		{//もしLタワーを閉じた状態でリーフをあげようとしたら、Lタワーを開けるだけで、Lハンドは下げておく
+			tower_L_status=air_OPEN;
+			hand_L_status =air_DOWN;
+		}
+
+	}
+	
+/*	
+	if((hand_L_status==air_UP) && (L_TOWER_UNDER_LIMIT==0) && (hand_L_position==air_UP))
+		hand_L_status=air_DOWN;//ハンド上がってる状態でタワー下リミットとハンド上リミットにあたったら、ハンド下げる	
+
+	if((hand_L_status==air_DOWN) && (L_TOWER_UNDER_LIMIT==0) && (hand_L_position==air_DOWN))
+		hand_L_status=air_UP;  //ハンドが下がっている状態でタワー下とハンド下リミットに触れていたら、ハンドを上げる
+*/		
+		if((hand_L_status==air_UP) && (L_TOWER_UNDER_LIMIT==0) && (hand_L_position==air_UP))
+		{	
+			hand_L_status=air_DOWN;//ハンド上がってる状態でタワー下リミットとハンド上リミットにあたったら、ハンド下げる	
+			leaf_get_flag=1;
+		}
+		else if( leaf_get_flag==1 && hand_L_position==air_DOWN)
+		{
+			hand_L_status=air_UP;
+			leaf_get_flag=0;
+		}
+		else if((hand_L_status==air_DOWN) && (L_TOWER_UNDER_LIMIT==0) && (hand_L_position==air_DOWN))
+		{
+			hand_L_status=air_UP;  //ハンドが下がっている状態でタワー下とハンド下リミットに触れていたら、ハンドを上げる
+			leaf_get_flag=0;
+		}
+		else if((hand_L_status==air_UP) && (L_TOWER_UNDER_LIMIT==0) && (hand_L_position==air_UP))
+		{	
+			hand_L_status=air_DOWN;//ハンド上がってる状態でタワー下リミットとハンド上リミットにあたったら、ハンド下げる	
+			leaf_get_flag=1;
+		}
+
+
+	old_shikaku=PSCON_PRE_SHIKAKU;
+}
+
+/********************************************************/
+//  名前      
+//		r_tower_system
+//	概要
+//		手動制御関連
+//	機能説明
+//		Rタワー関係のdutyを入力
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void r_tower_system(void)
+{
+	static unsigned char old_maru;
+	static int timer=0;//Rタワーのためのカウント用
+	
+	if(fishing_rod != 0.0 || DUTY_R >5 || (PSCON_PRE_L1>0 && fishing_rod_position>100.0))tower_R_b_status=air_CLOSE;//釣竿動かすときか、釣竿伸びた状態で自動化している時はサーボ閉じる
+	if(fishing_rod_position<100.0)tower_R_t_status=air_OPEN;//釣竿手前にあるときは開ける
+	if(HALF_1==254)//セレクト押されたら開く
+	{
+		tower_R_t_status=air_OPEN;
+		tower_R_b_status=air_OPEN;
+	}
+	else if(old_maru==0 && PSCON_PRE_MARU>0)//○押した時
+	{
+		if(PSCON_PRE_R1>0)//上側
+		{			
+			if(fishing_rod_position>200.0 && tower_R_b_status==air_OPEN && tower_R_t_status==air_CLOSE)//アーム伸ばした状態で下が開いていて上も開けるような動きをしたら
+			{
+				tower_R_b_status=air_CLOSE;//下側を閉じて上も閉じたままにする
+			}
+			else tower_R_t_status *= -1;
+		}
+		else//下側
+		{
+			if(fishing_rod_position>200.0 && tower_R_t_status==air_OPEN && tower_R_b_status==air_CLOSE)//アーム伸ばした状態で上が開いていて下も開けるような動きをしたら
+			{
+				tower_R_t_status=air_CLOSE;//上側を閉じて下も閉じたままにする
+			}
+			else tower_R_b_status *= -1;//下がわ
+		}
+	}
+	else if((SERVO_LIMIT!=0 && servo_position==air_CLOSE) && fishing_rod_position>100.0)//サーボのリーフ検知リミットに触れておらず、サーボが閉じている時
+	{
+		if(timer<30)tower_R_t_status=air_OPEN;//上に溜まっているリーフを下ろす(0.3秒後は手動でも操作できるようにする)
+		if(timer<500)timer++;
+	}
+	else if(fishing_rod_position>100.0 && (SERVO_LIMIT==0 || timer>80))
+	{
+		tower_R_t_status=air_CLOSE;//再び保持
+		timer=0;
+	}
+	else timer=0;
+	
+	old_maru=PSCON_PRE_MARU;
+}
+
+/********************************************************/
+//  名前      
+//		l_tower_system
+//	概要
+//		手動制御関連
+//	機能説明
+//		Rタワー関係のdutyを入力
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void l_tower_system(void)
+{
+	static unsigned char old_sankaku;
+	//Lタワーについて---------------------------------
+	if(HALF_1==254)tower_L_status=air_OPEN;//セレクト押されたら開く
+	else if(old_sankaku==0 && PSCON_PRE_SANKAKU>0)
+	{
+		tower_L_status *= -1;
+	}
+	if((L_arm_position<150.0) && (D_direction_D-D_direction_U)!=0)tower_L_status=air_CLOSE;//ある程度手前で動かすときは閉じないと干渉するらしい
+
+	//------------------------------------------------------------------------------
+	
+	old_sankaku=PSCON_PRE_SANKAKU;
+}
+
+/********************************************************/
+//  名前      
+//		to_get_leaf
+//	概要
+//		手動制御関連
+//	機能説明
+//		セレクトの動作と同じ。リーフを取得前にやっておきたいこと
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void to_get_leaf(void)
+{
+	hand_L_status=air_DOWN;
+	hand_R_status=air_DOWN;
+	tower_L_status=air_OPEN;
+	tower_R_t_status=air_OPEN;
+	tower_R_b_status=air_OPEN;
+}
+
+/********************************************************/
+//  名前      
+//		to_set_leaf
+//	概要
+//		手動制御関連
+//	機能説明
+//		リーフ設置前にやっておきたいこと。タワー閉じてハンド下げる
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void to_set_leaf(void)
+{
+	static char count;
+	
+	tower_R_b_status=air_CLOSE;
+	tower_R_t_status=air_CLOSE;
+	tower_L_status=air_CLOSE;
+		
+	if(count>65)//タワーを閉じてから0.65秒後にハンドを下ろす
+	{
+		hand_R_status=air_DOWN;
+		hand_L_status=air_DOWN;
+		count=0;
+	}
+		
+	count++;
+}
+
+/********************************************************/
+//  名前      
+//		auto_direction_and_duty
+//	概要
+//		手動制御関連
+//	機能説明
+//		自動的に目標地点に到達できるようにdirection_dutyとdirection_radに値を格納
+//	パラメータ説明
+//		x:目標x座標
+//		y:目標y座標
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void auto_direction_and_duty(double x,double y,double Kp,double Ki,double Kd)
+{
+	double duty,rad;//求めるdutyと角度
+	double distance;//目標値までの距離
+	static double auto_P,auto_I,auto_D;
+	static double old_x,old_distance;
+	
+	rad=atan2((y-macond.pos.y),(x-macond.pos.x));//目標方向
+	if(rad<0)rad+=2.0*PI;//0-2πに設定
+	
+	direction_rad=rad-choose_degree*PI/18000.0;
+	
+	while(direction_rad<0.0)	direction_rad+=2.0*PI;//0-2πに設定
+	while(direction_rad>2.0*PI)	direction_rad-=2.0*PI;//0-2πに設定
+	
+	distance=DIST(x,y,macond.pos.x,macond.pos.y);
+	auto_P=distance;
+	auto_I+=auto_P;
+	auto_D=(distance-old_distance);
+	if(old_x!=x){auto_P=0.0;	auto_I=0.0;	auto_D=0.0;}//目標値が変わったらゲインのクリア
+	else duty=Kp*auto_P+Ki*auto_I+Kd*auto_D;
+	
+//	if(direction_duty>duty)direction_duty=duty;
+	
+	if(duty>100.0)duty=100.0;//頭打ち
+	
+	direction_duty=duty;//direction_dutyに代入
+
+	old_distance=distance;
+	old_x=x;
+}
+
+/********************************************************/
+//  名前      
+//		auto_suspension_system
+//	概要
+//		手動制御関連
+//	機能説明
+//		足回りのdutyを入力
+//	パラメータ説明
+//		なし
+//	戻り値
+//		なし
+//	作成者
+//		やまむろ
+/********************************************************/
+void auto_suspension_system(void)
+{
+	char zone=mode();
+	
+	static unsigned char old_half_1,old_R1,old_L1;
+	static char L1_count=0;
+
+	//赤ゾーン経路				x				y			角度		釣竿		
+	double red_lief_field[4]={		6450.0,		-4850.0,	-88.0,		 0.0};
+	double red_spot1[4]		={		4800.0,		-3527.0,	 61.0,	  1530.0};
+	double red_spot2[4]		={		4243.9,		-3381.2,	 61.0,	   900.0};
+	double red_spot3[4]		={		2967.6,		-1965.7,	 61.0,	  1314.0};
+	double red_pass_field[4]={		 208.3,		 -803.8,	 70.0,		 0.0};
+	double red_get_sucker[4]={		3269.0,		 3415.5,	180.0,		 0.0};//苗木受け取り位置
+	double red_V_GOAL[4]	={		3180.5,		 2721.2,	230.8,		 0.0};//苗木発射位置
+
+	//青ゾーン経路				x				y			角度		釣竿		
+	double blue_lief_field[4]={		6293.2,		 4860.6,	 86.0,		 0.0};
+	double blue_spot1[4]	 ={		5140.1,		 3671.2,	-56.3,	  1520.0};
+	double blue_spot2[4]	 ={		4567.7,		 3425.7,	-55.9,	   845.6};
+	double blue_spot3[4]	 ={		2894.5,		 1616.3,	-31.8,	  1417.2};
+	double blue_pass_field[4]={		 525.1,		  351.7,   -133.6,		 0.0};
+	double blue_get_sucker[4]={		3200.0,		-2700.2,   -180.0,		 0.0};
+	double blue_V_GOAL[4]	 ={		3400.0,		-3100.0,   -221.2,		 0.0};//苗木発射位置
+
+	
+	
+	if(old_L1==0 && PSCON_PRE_L1>10)L1_count++;//L1を押された回数を数える
+	if(HALF_1==249)L1_count=100;//もしL3とR3が押されたらL1_countを自動化と関係ないくらいまで上げる
+	
+	//自動化スタート
+	if(D_direction_D==0 && D_direction_U==0 && D_direction_R == 0 && D_direction_L == 0 && HALF_1!=253)
+	{
+	////////////////////////////////////////////////////////////////////////////////////////////
+	if(PSCON_PRE_L1>0 && L1_count==1)//スタート時の自動化
+	{	
+		choose_degree=0.0;
+		if(macond.pos.x>3000.0 && macond.pos.x<3500.0)to_get_leaf();//セレクトの動作		
+		
+		if(zone=='R')//赤ゾーンの時
+		{
+			if(macond.pos.x<(red_lief_field[0]-50.0))auto_direction_and_duty(red_lief_field[0],red_lief_field[1],0.1,0.0,0.0);//P制御で目標位置まで移動
+			else direction_duty=0.0;
+			if(macond.pos.x>1500.0)kaiten=(double)PID_control(red_lief_field[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で-88°にあわせる。
+
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				if(macond.pos.x<(blue_lief_field[0]-50.0))auto_direction_and_duty(blue_lief_field[0],blue_lief_field[1],0.1,0.0,0.0);//P制御で目標位置まで移動
+				else direction_duty=0.0;
+				if(macond.pos.x>1500.0)kaiten=(double)PID_control(blue_lief_field[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で-88°にあわせる。
+
+			}
+
+		}
+		/////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////
+		else if(PSCON_PRE_L1>0 && L1_count==2)//スポット１まで移動
+		{
+			to_set_leaf();
+
+			if(zone=='R')//赤ゾーンの時
+			{
+				kaiten=(double)PID_control(red_spot1[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で50°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(red_spot1[0],red_spot1[1],0.1,0.0,0.0);//P制御で目標位置まで移動
+				if(DIST(red_spot1[0],red_spot1[1],macond.pos.x,macond.pos.y) <200.0)//200mm以内に近づいたら
+				{
+					if(hand_R_position==air_DOWN)fishing_rod=PID_control(red_spot1[3],fishing_rod_position,95,0.15,0.0,0.15,2);//アーム伸ばす
+					choose_degree=red_spot1[2]*100.0;//絶対座標を61°に変更
+			
+				}
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				kaiten=(double)PID_control(blue_spot1[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で50°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(blue_spot1[0],blue_spot1[1],0.1,0.0,0.0);//P制御で目標位置まで移動
+				if(DIST(blue_spot1[0],blue_spot1[1],macond.pos.x,macond.pos.y) <200.0)//200mm以内に近づいたら
+				{
+					if(hand_R_position==air_DOWN)fishing_rod=PID_control(blue_spot1[3],fishing_rod_position,95,0.15,0.0,0.15,2);//アーム伸ばす
+					choose_degree=blue_spot1[2]*100.0;//絶対座標を61°に変更
+			
+				}
+			}
+
+		}
+		/////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////
+		else if(PSCON_PRE_L1>0 && L1_count==3)//スポット2まで移動
+		{
+			to_set_leaf();
+		
+			if(zone=='R')//赤ゾーンの時
+			{
+				kaiten=(double)PID_control(red_spot2[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で50°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(red_spot2[0],red_spot2[1],0.1,0.0,0.0);//P制御で目標位置まで移動
+				if(hand_R_position==air_DOWN)fishing_rod = PID_control(red_spot2[3],fishing_rod_position,95,0.08,0.001,0.08,2);
+				choose_degree=red_spot2[2]*100.0;//絶対座標を61°に変更
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				kaiten=(double)PID_control(blue_spot2[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で50°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(blue_spot2[0],blue_spot2[1],0.1,0.0,0.0);//P制御で目標位置まで移動
+				if(hand_R_position==air_DOWN)fishing_rod = PID_control(blue_spot2[3],fishing_rod_position,95,0.08,0.001,0.08,2);
+				choose_degree=blue_spot2[2]*100.0;//絶対座標を61°に変更
+			}
+		
+		}
+		////////////////////////////////////////////////////////////;
+		/////////////////////////////////////////////////////////////
+		else if(PSCON_PRE_L1>0 && L1_count==4)//スポット3まで移動
+		{
+			to_set_leaf();
+	
+			if(zone=='R')//赤ゾーンの時
+			{
+				kaiten=(double)PID_control(red_spot3[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で44.73°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(red_spot3[0],red_spot3[1],0.07,0.0,0.0);//P制御で目標位置まで移動
+				if(DIST(red_spot3[0],red_spot3[1],macond.pos.x,macond.pos.y) <200.0)
+				{
+					if(hand_R_position==air_DOWN)fishing_rod=PID_control(red_spot3[3],fishing_rod_position,95,0.15,0.0,0.15,2);
+					choose_degree=red_spot3[2]*100.0;//絶対座標を61°に変更
+				}
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				kaiten=(double)PID_control(blue_spot3[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で44.73°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(blue_spot3[0],blue_spot3[1],0.07,0.0,0.0);//P制御で目標位置まで移動
+				if(DIST(blue_spot3[0],blue_spot3[1],macond.pos.x,macond.pos.y) <200.0)
+				{
+					if(hand_R_position==air_DOWN)fishing_rod=PID_control(blue_spot3[3],fishing_rod_position,95,0.15,0.0,0.15,2);
+					choose_degree=blue_spot3[2]*100.0;//絶対座標を61°に変更
+				}
+			}
+		}
+		/////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////
+		else if(PSCON_PRE_L1>0 && L1_count==5)//自動機に向き旋回し、絶対角度を合わせ、移動して左ハンドを伸ばす
+		{
+			to_set_leaf();
+	
+			if(zone=='R')//赤ゾーンの時
+			{
+				choose_degree=9000.0;//絶対座標を90°に変更
+				kaiten=(double)PID_control(red_pass_field[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で70°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(red_pass_field[0],red_pass_field[1],0.07,0.0,0.0);//P制御で目標位置まで移動
+				if(hand_R_position==air_DOWN)fishing_rod=PID_control(red_pass_field[3],fishing_rod_position,50,0.15,0.0,0.075,2);//アームを戻す
+
+				if(macond.pos.x<(red_pass_field[0]+200.0) && hand_L_position==air_DOWN)l_arm=PID_control(470.0,L_arm_position,95,0.2,0.0,0.2,0);//自動機に近づいたら左アーム伸ばす
+			
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				choose_degree=-9000.0;//絶対座標を-90°に変更
+				kaiten=(double)PID_control(blue_pass_field[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で70°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(blue_pass_field[0],blue_pass_field[1],0.07,0.0,0.0);//P制御で目標位置まで移動
+				if(hand_R_position==air_DOWN)fishing_rod=PID_control(blue_pass_field[3],fishing_rod_position,70,0.15,0.0,0.075,2);//アームを戻す
+
+				if(macond.pos.x<(blue_pass_field[0]+200.0) && hand_L_position==air_DOWN)l_arm=PID_control(470.0,L_arm_position,95,0.2,0.0,0.2,0);//自動機に近づいたら左アーム伸ばす
+				if(fishing_rod_position<10.0)hand_R_status=air_UP;
+			}
+		
+		}
+		///////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////
+		else if(PSCON_PRE_L1>0 && L1_count==6)//苗木受け取り位置に移動
+		{
+
+			if(zone=='R')//赤ゾーンの時
+			{
+				choose_degree=9000.0;//絶対座標を90°に変更
+				kaiten=(double)PID_control(red_get_sucker[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で0°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(red_get_sucker[0],red_get_sucker[1],0.06,0.0,0.0);//P制御で目標位置まで移動
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				choose_degree=-9000.0;//絶対座標を-90°に変更
+				kaiten=(double)PID_control(blue_get_sucker[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で0°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(blue_get_sucker[0],blue_get_sucker[1],0.06,0.0,0.0);//P制御で目標位置まで移動
+			}
+		
+		}
+		///////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////
+		else if(PSCON_PRE_L1>0 && L1_count==7)//発射位置に移動
+		{
+
+			if(zone=='R')//赤ゾーンの時
+			{
+				choose_degree=red_V_GOAL[2]*100.0+18000.0;//絶対座標をマシンの反対に変更
+				kaiten=(double)PID_control(red_V_GOAL[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で0°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(red_V_GOAL[0],red_V_GOAL[1],0.075,0.0,0.0);//P制御で目標位置まで移動
+
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				choose_degree=blue_V_GOAL[2]*100.0+18000.0;//絶対座標をマシンの反対に変更
+				kaiten=(double)PID_control(blue_V_GOAL[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で0°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(blue_V_GOAL[0],blue_V_GOAL[1],0.075,0.0,0.0);//P制御で目標位置まで移動
+			}
+				
+		}
+		///////////////////////////////////////////////////////////////
+	}
+	else//リトライの後の制御スタート
+	{
+		/////////////////////////////////////////////////////////////////
+		if(PSCON_PRE_L1>0 && D_direction_U>0)//リトライ時リーフ置き場へ移動
+		{
+			L1_count=1;
+			choose_degree=0.0;
+			if(macond.pos.x>3000.0 && macond.pos.x<3500.0)to_get_leaf();//セレクトの動作		
+		
+			if(zone=='R')//赤ゾーンの時
+			{
+				if(macond.pos.x<(red_lief_field[0]-50.0))auto_direction_and_duty(red_lief_field[0],red_lief_field[1],0.1,0.0,0.0);//P制御で目標位置まで移動
+				else direction_duty=0.0;
+				if(macond.pos.x>1500.0)kaiten=(double)PID_control(red_lief_field[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で-88°にあわせる。
+
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				if(macond.pos.x<(blue_lief_field[0]-50.0))auto_direction_and_duty(blue_lief_field[0],blue_lief_field[1],0.1,0.0,0.0);//P制御で目標位置まで移動
+				else direction_duty=0.0;
+				if(macond.pos.x>1500.0)kaiten=(double)PID_control(blue_lief_field[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で-88°にあわせる。
+
+			}		
+		}
+		////////////////////////////////////////////////////
+		////////////////////////////////////////////////////
+		else if(PSCON_PRE_L1>0 && D_direction_R>0)//リトライ時スポット1へ移動
+		{
+			L1_count=2;
+			to_set_leaf();
+
+			if(zone=='R')//赤ゾーンの時
+			{
+				kaiten=(double)PID_control(red_spot1[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で50°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(red_spot1[0],red_spot1[1],0.1,0.0,0.0);//P制御で目標位置まで移動
+				if(DIST(red_spot1[0],red_spot1[1],macond.pos.x,macond.pos.y) <200.0)//200mm以内に近づいたら
+				{
+					if(hand_R_position==air_DOWN)fishing_rod=PID_control(red_spot1[3],fishing_rod_position,95,0.15,0.0,0.15,2);//アーム伸ばす
+					choose_degree=red_spot1[2]*100.0;//絶対座標を61°に変更
+			
+				}
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				kaiten=(double)PID_control(blue_spot1[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で50°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(blue_spot1[0],blue_spot1[1],0.1,0.0,0.0);//P制御で目標位置まで移動
+				if(DIST(blue_spot1[0],blue_spot1[1],macond.pos.x,macond.pos.y) <200.0)//200mm以内に近づいたら
+				{
+					if(hand_R_position==air_DOWN)fishing_rod=PID_control(blue_spot1[3],fishing_rod_position,95,0.15,0.0,0.15,2);//アーム伸ばす
+					choose_degree=blue_spot1[2]*100.0;//絶対座標を61°に変更
+			
+				}
+			}
+		}
+		/////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////
+		else if(PSCON_PRE_L1>0 && D_direction_D>0)//リトライ時スポット3まで移動
+		{
+			L1_count=4;
+			to_set_leaf();
+	
+			if(zone=='R')//赤ゾーンの時
+			{
+				kaiten=(double)PID_control(red_spot3[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で44.73°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(red_spot3[0],red_spot3[1],0.07,0.0,0.0);//P制御で目標位置まで移動
+				if(DIST(red_spot3[0],red_spot3[1],macond.pos.x,macond.pos.y) <200.0)
+				{
+					if(hand_R_position==air_DOWN)fishing_rod=PID_control(red_spot3[3],fishing_rod_position,95,0.15,0.0,0.15,2);
+					choose_degree=red_spot3[2]*100.0;//絶対座標を61°に変更
+				}
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				kaiten=(double)PID_control(blue_spot3[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で44.73°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(blue_spot3[0],blue_spot3[1],0.07,0.0,0.0);//P制御で目標位置まで移動
+				if(DIST(blue_spot3[0],blue_spot3[1],macond.pos.x,macond.pos.y) <200.0)
+				{
+					if(hand_R_position==air_DOWN)fishing_rod=PID_control(blue_spot3[3],fishing_rod_position,95,0.15,0.0,0.15,2);
+					choose_degree=blue_spot3[2]*100.0;//絶対座標を61°に変更
+				}
+			}
+		
+		}
+		/////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////
+		else if(PSCON_PRE_L1>0 && D_direction_L)//リトライ時自動機に向き旋回し、絶対角度を合わせ、移動して左ハンドを伸ばす
+		{
+			L1_count=5;
+			to_set_leaf();
+	
+			if(zone=='R')//赤ゾーンの時
+			{
+				choose_degree=9000.0;//絶対座標を90°に変更
+				kaiten=(double)PID_control(red_pass_field[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で70°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(red_pass_field[0],red_pass_field[1],0.07,0.0,0.0);//P制御で目標位置まで移動
+				if(hand_R_position==air_DOWN)fishing_rod=PID_control(red_pass_field[3],fishing_rod_position,50,0.15,0.0,0.075,2);//アームを戻す
+
+				if(macond.pos.x<(red_pass_field[0]+200.0) && hand_L_position==air_DOWN)l_arm=PID_control(470.0,L_arm_position,95,0.2,0.0,0.2,0);//自動機に近づいたら左アーム伸ばす
+			
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				choose_degree=-9000.0;//絶対座標を-90°に変更
+				kaiten=(double)PID_control(blue_pass_field[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で70°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(blue_pass_field[0],blue_pass_field[1],0.07,0.0,0.0);//P制御で目標位置まで移動
+				if(hand_R_position==air_DOWN)fishing_rod=PID_control(blue_pass_field[3],fishing_rod_position,70,0.15,0.0,0.075,2);//アームを戻す
+
+				if(macond.pos.x<(blue_pass_field[0]+200.0) && hand_L_position==air_DOWN)l_arm=PID_control(470.0,L_arm_position,95,0.2,0.0,0.2,0);//自動機に近づいたら左アーム伸ばす
+				if(fishing_rod_position<10.0)hand_R_status=air_UP;
+			}
+		
+
+		}
+		///////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////
+		else if(PSCON_PRE_L1>0 && HALF_1==253)//リトライ時発射位置に移動
+		{
+			L1_count=7;
+
+			if(zone=='R')//赤ゾーンの時
+			{
+				choose_degree=red_V_GOAL[2]*100.0+18000.0;//絶対座標をマシンの反対に変更
+				kaiten=(double)PID_control(red_V_GOAL[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で0°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(red_V_GOAL[0],red_V_GOAL[1],0.075,0.0,0.0);//P制御で目標位置まで移動
+
+			}
+			else if(zone=='B')//青ゾーンの時
+			{
+				choose_degree=blue_V_GOAL[2]*100.0+18000.0;//絶対座標をマシンの反対に変更
+				kaiten=(double)PID_control(blue_V_GOAL[2],(double)m_angle/100.0,100,	4.0,	0.0,	0.0,1);//P制御で0°にあわせる。P成分だけでやったほうがいい		
+				auto_direction_and_duty(blue_V_GOAL[0],blue_V_GOAL[1],0.075,0.0,0.0);//P制御で目標位置まで移動
+			}
+		
+		}
+		///////////////////////////////////////////////////////////////
+	}
+	
+//	printf("%d\n",L1_count);
+	
+	old_half_1 = HALF_1;
+	old_R1=PSCON_PRE_R1;
+	old_L1=PSCON_PRE_L1;
+	
+}

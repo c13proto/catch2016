@@ -1,0 +1,155 @@
+		if(D_direction_R!=0)//最初の動き
+		{
+			const int wait_time=10;//[*10ms]
+			const double bottom_pos=1460.0;
+			const double box_pos=300.0;
+			
+			B_U=ON;
+			B_U2=OFF;//低速モードOFF
+			
+			auto_yoshi_ctrl(353.77);//吉見機構落ちない位置まで移動
+			if(LED_RED==ON)
+			{
+				auto_toku_l_ctrl(371.4);//徳山取る直前まで移動
+				auto_toku_r_ctrl(371.4);//徳山取る直前まで移動
+			}
+						
+			if(YOSHI.pos>50.0)
+			{								
+				if(uo_flag==0)
+				{
+					auto_uo_ctrl(bottom_pos,75.0,0.75);
+					if(ABS(UO.pos-bottom_pos)<20)uo_counter++;
+					if(uo_counter>wait_time)uo_flag=1;//下に到着
+				}
+				if(uo_flag==1)
+				{
+					auto_uo_ctrl(box_pos,100.0,0.75);
+					if(ABS(box_pos-UO.pos)<350)B_U=OFF;
+				}
+			}
+
+		if(D_direction_R!=0)//最初の動き
+		{
+			const int wait_time=5;//[*10ms]
+			const double bottom_pos=1460.0;
+			const double box_pos=200.0;
+			
+			B_U=ON;
+			B_U2=OFF;//低速モードOFF
+			
+			auto_yoshi_ctrl(353.77);//吉見機構落ちない位置まで移動
+			if(LED_RED==ON)
+			{
+				auto_toku_l_ctrl(371.4);//徳山取る直前まで移動
+				auto_toku_r_ctrl(371.4);//徳山取る直前まで移動
+			}
+						
+			if(YOSHI.pos>65.0)
+			{								
+				if(uo_flag==0)
+				{
+					auto_uo_ctrl(bottom_pos,75.0,0.75);
+					if(ABS(UO.pos-bottom_pos)<20)uo_counter++;
+					if(uo_counter>wait_time)uo_flag=1;//下に到着
+				}
+				if(uo_flag==1)
+				{
+					auto_uo_ctrl(box_pos,100.0,0.75);
+					if(ABS(box_pos-UO.pos)<550)B_U=OFF;
+					if(UO.pos<box_pos)uo_flag=2;
+				}
+				if(uo_flag==2)
+				{
+					auto_uo_ctrl(box_pos+10,100.0,2.5);
+				}
+			}
+		}
+
+		UO.duty=0;
+		if(D_direction_R!=0)//最初の動き
+		{
+			const int wait_time=5;//[*10ms]
+			const double bottom_pos=1460.0;
+			const double box_pos=100.0;
+			
+			if(uo_flag==0)
+			{
+				B_U=ON;
+				B_U2=OFF;//低速モードOFF
+			}
+			
+			auto_yoshi_ctrl(353.77);//吉見機構落ちない位置まで移動
+			if(LED_RED==ON)
+			{
+				auto_toku_l_ctrl(371.4);//徳山取る直前まで移動
+				auto_toku_r_ctrl(371.4);//徳山取る直前まで移動
+			}
+						
+			if(YOSHI.pos>65.0)
+			{								
+				if(uo_flag==0)
+				{
+					auto_uo_ctrl(bottom_pos,75.0,0.75);
+					if(ABS(UO.pos-bottom_pos)<20)uo_counter++;
+					if(uo_counter>wait_time)uo_flag=1;//下に到着
+				}
+				else if(uo_flag==1)
+				{
+					auto_uo_ctrl(box_pos,100.0,0.75);
+					if(ABS(box_pos-UO.pos)<550)B_U=OFF;
+					if(UO.pos<box_pos)uo_flag=2;
+				}
+				else if(uo_flag==2)
+				{
+					auto_uo_ctrl(box_pos+5,100.0,1.5);
+					if(UO.pos>box_pos+10)uo_flag=3;
+				}
+				else UO.duty=0;
+				
+			}
+		}
+		
+		auto_uo_ctrl(0,50.0,0.75);
+		if(D_direction_R!=0)//最初の動き
+		{
+			const int wait_time=5;//[*10ms]
+			const double bottom_pos=1450.0;//1460.0;
+			const double box_pos=100.0;
+			
+			if(uo_flag==0)
+			{
+				B_U=ON;
+				B_U2=OFF;//低速モードOFF
+			}
+			
+			auto_yoshi_ctrl(353.77);//吉見機構落ちない位置まで移動
+			if(LED_RED==ON)
+			{
+				auto_toku_l_ctrl(371.4);//徳山取る直前まで移動
+				auto_toku_r_ctrl(371.4);//徳山取る直前まで移動
+			}
+						
+			if(YOSHI.pos>65.0)
+			{								
+				if(uo_flag==0)
+				{
+					auto_uo_ctrl(bottom_pos,75.0,0.75);
+					if(ABS(UO.pos-bottom_pos)<20)uo_counter++;
+					if(uo_counter>wait_time)uo_flag=1;//下に到着
+				}
+				else if(uo_flag==1)
+				{
+					auto_uo_ctrl(box_pos,100.0,0.75);
+					if(ABS(box_pos-UO.pos)<550)B_U=OFF;
+					if(UO.pos<box_pos)uo_flag=2;
+				}
+				else if(uo_flag==2)
+				{
+					auto_uo_ctrl(box_pos+5,100.0,1.5);
+					if(UO.pos>box_pos+10)uo_flag=3;
+				}
+				else UO.duty=0;
+				
+			}
+		}
