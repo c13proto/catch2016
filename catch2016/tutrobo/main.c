@@ -81,7 +81,7 @@ int main()
 //	#define PSCON_HALF_DEBUG	// halfのデバッグ
 //	#define R1350N_DEBUG		// ジャイロのデバッグ
 //	#define GMA860COND_DEBUG	// ジャイロMAP状態のデバッグ
-//	#define MACOND_DEBUG		// マシンコンディションのデバッグ
+	#define MACOND_DEBUG		// マシンコンディションのデバッグ
 //	#define OMUNI_RES			// オムニの補正値だし
 //	#define POSITION_DEBUG		// 自動化のための位置出し
 //	#define CURRENT_DEBUG		// 相対位置
@@ -94,7 +94,7 @@ int main()
 //	#define ARM_POSITION		// アーム系の位置確認
 //	#define AD_0_3_DEBUG		// AD変換データのデバック(チャンネル0～チャンネル3)		
 //	#define AD_4_7_DEBUG		// AD変換データのデバック(チャンネル4～チャンネル7)
-	#define AD_0_7_DEBUG		// AD変換データのデバック(チャンネル4～チャンネル7)
+//	#define AD_0_7_DEBUG		// AD変換データのデバック(チャンネル4～チャンネル7)
 //	#define BUZZER_DEBUG		// BUZZERのデバック
 //	#define LED_DEBUG 			// LEDのデバック
 //	#define LED_CTRL_DEBUG 		// LEDコントロールのデバック
@@ -176,14 +176,11 @@ void debug(){
 #ifdef	CUSTOMIZE_DEBUG
 {
 
-	printf("%.1f\t,%.1f\t,%.1f\t,%.1f\t,%.1f\t,%.1f\t\r\n",KUMA_THETA_L.duty,KUMA_R_L.duty,KUMA_Z_L.duty,KUMA_THETA_R.duty,KUMA_R_R.duty,KUMA_Z_R.duty);
+//	printf("%.1f\t,%.1f\t,%.1f\t,%.1f\t,%.1f\t,%.1f\t\r\n",KUMA_THETA_L.duty,KUMA_R_L.duty,KUMA_Z_L.duty,KUMA_THETA_R.duty,KUMA_R_R.duty,KUMA_Z_R.duty);
 //	printf("%.1f\t,%.1f\t,%.1f\t,%.1f\t\n",DEBUG[0],DEBUG[1],DEBUG[2],DEBUG[3]);	
 	//printf("%d\t,%.1f\t,%d\t,%.1f\r\n",AD_DATA[0],KUMA_THETA_L.pos,AD_DATA[3],KUMA_THETA_R.pos);
-<<<<<<< HEAD
-	//printf("%d,%d,%d,%d\n",SERVO_L,(int)DEBUG[0],SERVO_R,(int)DEBUG[1]);
-=======
-	printf("%d,%d,%.1f\n",(int)DEBUG[0],(int)DEBUG[1],YOSHI.duty);
->>>>>>> parent of 0ea2d61... 蟾ｦ荳九し繝ｼ繝懷柑縺九↑縺�縺ｮ蟇ｾ蜃ｦ縺励◆
+
+//	printf("%d,%d,%d,%d,%.1,%.1f\n",(int)DEBUG[0],(int)DEBUG[1],(int)DEBUG[2],(int)DEBUG[3],ABS(KUMA_THETA_R.pos-140.0),ABS(KUMA_R_R.pos-450));
 }
 #endif
 

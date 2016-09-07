@@ -234,7 +234,7 @@ void input_register_ctrl(void)
 	KUMA_THETA_R_PWM=anti_lock_pwm(-KUMA_THETA_R.duty);//0B
 	KUMA_R_L_PWM	=anti_lock_pwm(-KUMA_R_L.duty);//0C
 	KUMA_R_R_PWM 	=anti_lock_pwm(KUMA_R_R.duty);//0D	
-	KUMA_Z_L_PWM	=anti_lock_pwm(KUMA_Z_L.duty);//9A
+	KUMA_Z_L_PWM	=anti_lock_pwm(-KUMA_Z_L.duty);//9A
 	KUMA_Z_R_PWM	=anti_lock_pwm(KUMA_Z_R.duty);//9C
 	
 	M5_PWM=anti_lock_pwm(PSstick_to_duty(DUTY_LY,PSCON_TH));//4A
@@ -549,19 +549,17 @@ void kuma_stop(void)
 	if(z_l_!=STOP_MODE && z_l==STOP_MODE)pos_z_l=KUMA_Z_L.pos;
 	if(z_r_!=STOP_MODE && z_r==STOP_MODE)pos_z_r=KUMA_Z_R.pos;	
 
-//if(PSCON_PRE_L1==0)
-{	
+	
 	//制御信号0の時にストップかける
 //	if(theta_l==STOP_MODE)	KUMA_THETA_L.duty=PID_control_d(pos_theta_l,KUMA_THETA_L.pos,30.0,0.25,0,0,0.5,0);
 //	if(r_l==STOP_MODE)		KUMA_R_L.duty=PID_control_d(pos_r_l,KUMA_R_L.pos,50.0,0.05,0,0,5,1);
 	if(z_l==STOP_MODE)		KUMA_Z_L.duty=PID_control_d(pos_z_l,KUMA_Z_L.pos,50.0,1.5,0,0,5,2);
-}
-//if(PSCON_PRE_L1_==0)
-{		
+
+		
 //	if(theta_r==STOP_MODE)	KUMA_THETA_R.duty=PID_control_d(pos_theta_r,KUMA_THETA_R.pos,30.0,2.0,0.01,0,0.5,3);
 //	if(r_r==STOP_MODE)		KUMA_R_R.duty=PID_control_d(pos_r_r,KUMA_R_R.pos,50.0,0.1,0,0,5,4);
 	if(z_r==STOP_MODE)		KUMA_Z_R.duty=PID_control_d(pos_z_r,KUMA_Z_R.pos,50.0,1.5,0,0,5,5);
-}	
+	
 	
 	theta_l_=theta_l;
 	r_l_=r_l;
@@ -660,17 +658,16 @@ void kuma_limit(void)
 		if(KUMA_THETA_R.duty<0)KUMA_THETA_R.duty=0;
 	}
 	
-	
 	//zの上下
 	if(KUMA_Z_L.pos<=0 && KUMA_Z_L.duty<0)KUMA_Z_L.duty=0;
 	if(KUMA_Z_R.pos<=0 && KUMA_Z_R.duty<0)KUMA_Z_R.duty=0;
-	if(KUMA_Z_L.pos>=500.0 && KUMA_Z_L.duty>0)KUMA_Z_L.duty=0;
-	if(KUMA_Z_R.pos>=500.0 && KUMA_Z_R.duty>0)KUMA_Z_R.duty=0;
+	if(KUMA_Z_L.pos>=520.0 && KUMA_Z_L.duty>0)KUMA_Z_L.duty=0;
+	if(KUMA_Z_R.pos>=520.0 && KUMA_Z_R.duty>0)KUMA_Z_R.duty=0;
 
 	if(KUMA_Z_L.pos<=70.0 && PSCON_PRE_R1==0)//zアーム縁と取付台干渉防止
 	{
 		if((KUMA_THETA_L.pos<10.0 || KUMA_THETA_L.pos>80.0)&&KUMA_Z_L.duty>0 )KUMA_Z_L.duty=0;
-		if(KUMA_R_L.pos<450.0 && KUMA_Z_L.duty>0)KUMA_Z_L.duty=0;
+		if(KUMA_R_L.pos<400.0 && KUMA_Z_L.duty>0)KUMA_Z_L.duty=0;
 		if(ABS(KUMA_POS_LX)<250 && ABS(KUMA_POS_LY)<300 && KUMA_Z_L.duty>0)KUMA_Z_L.duty=0;//y300,x250
 		
 	}
@@ -700,7 +697,7 @@ void	uo_limit(void)
 void	yoshi_limit(void)
 {
 	if(YOSHI.pos<=2 && YOSHI.duty<0)YOSHI.duty=0;
-	if(YOSHI.pos>=410.0 && YOSHI.duty>0)YOSHI.duty=-10;
+	if(YOSHI.pos>=415.0 && YOSHI.duty>0)YOSHI.duty=-10;
 }
 
 

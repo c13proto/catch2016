@@ -34,9 +34,6 @@ void pwm_set_omni_ctrl(OMNI_DUTY omni)
 	motor_l(omni.l);
 	motor_r(omni.r);
 	
-	motor_debug[0]=omni.o;
-	motor_debug[1]=omni.l;
-	motor_debug[2]=omni.r;
 	
 //	printf("%.2f\t%.2f\t%.2f\t%.2f\n",omni.l1,omni.l2,omni.r2,omni.r1);
 	
