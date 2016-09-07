@@ -210,13 +210,33 @@ void auto_p2_ctrl(void)
 	//徳山
 	if(L1!=0)//L1押されてる時
 	{
+		
+		static int start_flag=0;
 		if(D_direction_R_!=0)//最初の動き
 		{
-			auto_kuma_r_ctrl(160.3 ,444.4  ,450.2,SERVO_R_INITIAL-4080);//左下(リミットで干渉は避けてくれるはず)
-			if(KUMA_R_R.pos<150.0)SERVO_R=SERVO_R_INITIAL;//サーボ回転させる余裕ができるまでそのままにする
-			if(KUMA_R_R.pos<300.0)KUMA_Z_R.duty=0;//ある程度伸ばすまでは縁との干渉を回避
-			if(KUMA_THETA_R.pos>162)KUMA_Z_R.duty=0;	
-			if(KUMA_Z_R.pos>400.0)B_R=ON;		
+			
+			//auto_kuma_r_ctrl(160.3 ,440.2 ,0,SERVO_R_INITIAL-4080)
+			if(start_flag==0)
+			{
+				auto_kuma_r_ctrl(250,0,0,SERVO_R_INITIAL);//
+				if(KUMA_THETA_R.pos>225)start_flag=1;				
+			}
+			if(start_flag==1)
+			{
+				auto_kuma_r_ctrl(200,405.2,0,SERVO_R_INITIAL);//
+				if(KUMA_R_R.pos>300)auto_kuma_r_ctrl(160.3 ,405.2 ,0,SERVO_R_INITIAL-4080);
+				if(KUMA_THETA_R.pos<165)start_flag=2;
+			}
+			if(start_flag==2)
+			{
+				auto_kuma_r_ctrl(160.3 ,405.2 ,450.2,SERVO_R_INITIAL-4080);
+				if(KUMA_Z_R.pos>200)auto_kuma_r_ctrl(160.3 ,440.2 ,450.2,SERVO_R_INITIAL-4080);
+				if(KUMA_Z_R.pos>400)start_flag=3;
+			}
+			if(start_flag==3)
+			{
+				kuma_r_zero();
+			}		
 		}
 		else if(D_direction_U_!=0)//上の経路
 		{
@@ -299,12 +319,14 @@ void auto_p2_ctrl(void)
 				auto_kuma_r_ctrl(165.1 ,440.2  ,450.2  ,SERVO_R_INITIAL-3600);//左下
 			else 
 			{
+				
 				safe_flag=0;
 				kuma_r_zero();
 			}
 		}
 		else
 		{
+			start_flag=0;
 			kuma_r_zero();
 		}
 	}
