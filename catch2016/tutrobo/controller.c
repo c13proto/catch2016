@@ -553,12 +553,12 @@ void kuma_stop(void)
 	//制御信号0の時にストップかける
 //	if(theta_l==STOP_MODE)	KUMA_THETA_L.duty=PID_control_d(pos_theta_l,KUMA_THETA_L.pos,30.0,0.25,0,0,0.5,0);
 //	if(r_l==STOP_MODE)		KUMA_R_L.duty=PID_control_d(pos_r_l,KUMA_R_L.pos,50.0,0.05,0,0,5,1);
-	if(z_l==STOP_MODE)		KUMA_Z_L.duty=PID_control_d(pos_z_l,KUMA_Z_L.pos,50.0,1.5,0,0,5,2);
+	if(z_l==STOP_MODE)		KUMA_Z_L.duty=PID_control_d(pos_z_l,KUMA_Z_L.pos,50.0,1.25,0.01,0,5,2);
 
 		
 //	if(theta_r==STOP_MODE)	KUMA_THETA_R.duty=PID_control_d(pos_theta_r,KUMA_THETA_R.pos,30.0,2.0,0.01,0,0.5,3);
 //	if(r_r==STOP_MODE)		KUMA_R_R.duty=PID_control_d(pos_r_r,KUMA_R_R.pos,50.0,0.1,0,0,5,4);
-	if(z_r==STOP_MODE)		KUMA_Z_R.duty=PID_control_d(pos_z_r,KUMA_Z_R.pos,50.0,1.5,0,0,5,5);
+	if(z_r==STOP_MODE)		KUMA_Z_R.duty=PID_control_d(pos_z_r,KUMA_Z_R.pos,50.0,1.25,0.01,0,5,5);
 	
 	
 	theta_l_=theta_l;

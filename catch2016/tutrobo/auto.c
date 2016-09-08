@@ -27,9 +27,7 @@ void auto_p1_ctrl(void)
 		auto_uo_ctrl(0,50.0,0.75);
 		if(D_direction_R!=0)//最初の動き
 		{
-			const int wait_time=5;//[*10ms]
-			const double bottom_pos=1450.0;//1460.0;
-			const double box_pos=100.0;
+
 			
 			if(uo_flag==0)
 			{
@@ -40,39 +38,68 @@ void auto_p1_ctrl(void)
 			auto_yoshi_ctrl(353.77);//吉見機構落ちない位置まで移動
 			if(LED_RED==ON)
 			{
-				auto_toku_l_ctrl(371.4);//徳山取る直前まで移動
-				auto_toku_r_ctrl(371.4);//徳山取る直前まで移動
-			}
-						
-			if(YOSHI.pos>65.0)
-			{								
-				if(uo_flag==0)
-				{
-					auto_uo_ctrl(bottom_pos,75.0,0.75);
-					if(ABS(UO.pos-bottom_pos)<20)uo_counter++;
-					if(uo_counter>wait_time)uo_flag=1;//下に到着
-				}
-				else if(uo_flag==1)
-				{
-					auto_uo_ctrl(box_pos,100.0,0.75);
-					if(ABS(box_pos-UO.pos)<550)B_U=OFF;
-					if(UO.pos<box_pos)uo_flag=2;
-				}
-				else if(uo_flag==2)
-				{
-					auto_uo_ctrl(box_pos+5,100.0,1.5);
-					if(UO.pos>box_pos+10)uo_flag=3;
-				}
-				else UO.duty=0;
+				//auto_toku_l_ctrl(371.4);//徳山取る直前まで移動
+				//auto_toku_r_ctrl(371.4);//徳山取る直前まで移動
+				const int wait_time=0;//[*10ms]
+				const double bottom_pos=1450.0;//1460.0;
+				const double box_pos=100.0;		
 				
+				if(YOSHI.pos>65.0)
+				{								
+					if(uo_flag==0)
+					{
+						auto_uo_ctrl(bottom_pos,75.0,0.75);
+						if(ABS(UO.pos-bottom_pos)<20)uo_counter++;
+						if(uo_counter>wait_time)uo_flag=1;//下に到着
+					}
+					else if(uo_flag==1)
+					{
+						auto_uo_ctrl(box_pos,100.0,0.75);
+						if(ABS(box_pos-UO.pos)<550)B_U=OFF;
+						if(UO.pos<box_pos)uo_flag=2;
+					}
+					else if(uo_flag==2)
+					{
+						auto_uo_ctrl(box_pos+5,100.0,1.5);
+						if(UO.pos>box_pos+10)uo_flag=3;
+					}
+					else UO.duty=0;
+				
+				}
+			}
+			else if(LED_BLUE==ON)
+			{
+				const int wait_time=0;//[*10ms]
+				const double bottom_pos=1450.0;//1460.0;
+				const double box_pos=100.0;		
+				
+				if(YOSHI.pos>65.0)
+				{								
+					if(uo_flag==0)
+					{
+						auto_uo_ctrl(bottom_pos,65.0,0.75);
+						if(ABS(UO.pos-bottom_pos)<20)uo_counter++;
+						if(uo_counter>wait_time)uo_flag=1;//下に到着
+					}
+					else if(uo_flag==1)
+					{
+						auto_uo_ctrl(box_pos,50.0,0.75);
+						if(ABS(box_pos-UO.pos)<550)B_U=OFF;
+						if(UO.pos<box_pos)uo_flag=2;
+					}
+					else if(uo_flag==2)
+					{
+						auto_uo_ctrl(box_pos+5,100.0,1.5);
+						if(UO.pos>box_pos+10)uo_flag=3;
+					}
+					else UO.duty=0;
+				
+				}
 			}
 		}
 		else if(D_direction_L!=0)//安全版
 		{
-			const int wait_time=25;//[*10ms]
-			const double bottom_pos=1450.0;//1460.0;
-			const double box_pos=100.0;
-			
+
 			if(uo_flag==0)
 			{
 				B_U=ON;
@@ -80,43 +107,74 @@ void auto_p1_ctrl(void)
 			}
 			
 			auto_yoshi_ctrl(353.77);//吉見機構落ちない位置まで移動
+			
 			if(LED_RED==ON)
 			{
-				auto_toku_l_ctrl(371.4);//徳山取る直前まで移動
-				auto_toku_r_ctrl(371.4);//徳山取る直前まで移動
-			}
-						
-			if(YOSHI.pos>65.0)
-			{								
-				if(uo_flag==0)
-				{
-					auto_uo_ctrl(bottom_pos,60.0,0.75);
-					if(ABS(UO.pos-bottom_pos)<20)uo_counter++;
-					if(uo_counter>wait_time)uo_flag=1;//下に到着
-				}
-				else if(uo_flag==1)
-				{
-					auto_uo_ctrl(box_pos,40.0,0.75);
-					if(ABS(box_pos-UO.pos)<550)B_U=OFF;
-					if(UO.pos<box_pos)uo_flag=2;
-				}
-				else if(uo_flag==2)
-				{
-					auto_uo_ctrl(box_pos+5,100.0,1.5);
-					if(UO.pos>box_pos+10)uo_flag=3;
-				}
-				else UO.duty=0;
+				const int wait_time=0;//[*10ms]
+				const double bottom_pos=1450.0;//1460.0;
+				const double box_pos=100.0;
 				
+				if(YOSHI.pos>65.0)
+				{								
+					if(uo_flag==0)
+					{
+						auto_uo_ctrl(bottom_pos,65.0,0.75);
+						if(ABS(UO.pos-bottom_pos)<20)uo_counter++;
+						if(uo_counter>wait_time)uo_flag=1;//下に到着
+					}
+					else if(uo_flag==1)
+					{
+						auto_uo_ctrl(box_pos,75.0,0.75);
+						if(ABS(box_pos-UO.pos)<550)B_U=OFF;
+						if(UO.pos<box_pos)uo_flag=2;
+					}
+					else if(uo_flag==2)
+					{
+						auto_uo_ctrl(box_pos+5,100.0,1.5);
+						if(UO.pos>box_pos+10)uo_flag=3;
+					}
+					else UO.duty=0;
+				
+				}
+			}
+			else if(LED_BLUE==ON)
+			{
+				const int wait_time=0;//[*10ms]
+				const double bottom_pos=1450.0;//1460.0;
+				const double box_pos=100.0;		
+				
+				if(YOSHI.pos>65.0)
+				{								
+					if(uo_flag==0)
+					{
+						auto_uo_ctrl(bottom_pos,55.0,0.75);
+						if(ABS(UO.pos-bottom_pos)<20)uo_counter++;
+						if(uo_counter>wait_time)uo_flag=1;//下に到着
+					}
+					else if(uo_flag==1)
+					{
+						auto_uo_ctrl(box_pos,40.0,0.75);
+						if(ABS(box_pos-UO.pos)<550)B_U=OFF;
+						if(UO.pos<box_pos+50)uo_flag=2;
+					}
+					else if(uo_flag==2)
+					{
+						auto_uo_ctrl(box_pos+50,30.0,1.5);
+						if(UO.pos>box_pos+50)uo_flag=3;
+					}
+					else UO.duty=0;
+				
+				}
 			}
 		}
 		else if(D_direction_U!=0)//上の経路
 		{
-			if(KUMA_Z_L.pos>=100.0)auto_kuma_l_ctrl(40.0  ,500.0  ,-30   ,SERVO_L_INITIAL);//下にいる時まずは安定位置に移動
+			if(KUMA_Z_L.pos>=100.0)auto_kuma_l_ctrl(40.0  ,500.0  ,0.01   ,SERVO_L_INITIAL);//下にいる時まずは安定位置に移動
 			else if(maru==0 && sankaku==0 && shikaku==0 && batsu!=0)
 			{
-				auto_kuma_l_ctrl(-33.1,		412.6,		-30,		SERVO_L_INITIAL-1180);//↓BOX
+				auto_kuma_l_ctrl(-42.5 ,487.2,		0.01,		SERVO_L_INITIAL-2440);//↓BOX
 				if(KUMA_THETA_L.pos>45 && KUMA_THETA_L.pos<90)
-					KUMA_R_L.duty=PID_control_d(350,KUMA_R_L.pos,65.0,0.5,0,0,5,1);//コモンゾーンとの干渉回避
+					KUMA_R_L.duty=PID_control_d(350,KUMA_R_L.pos,65.0,0.5,0.01,0,5,1);//コモンゾーンとの干渉回避
 				if(KUMA_THETA_L.pos>0)SERVO_L=SERVO_L_INITIAL;
 				
 				KUMA_THETA_L.duty=duty_limit(KUMA_THETA_L.duty,70);
@@ -125,9 +183,9 @@ void auto_p1_ctrl(void)
 			}
 			else if(maru==0 && sankaku==0 && shikaku!=0 && batsu==0)
 			{
-				auto_kuma_l_ctrl(111.8,		467.9,		-30 ,		SERVO_L_INITIAL+780);//←BOX
+				auto_kuma_l_ctrl(127.1 ,539.7,		0.01 ,		SERVO_L_INITIAL+780);//←BOX
 				if(KUMA_THETA_L.pos>45 && KUMA_THETA_L.pos<90)
-					KUMA_R_L.duty=PID_control_d(350,KUMA_R_L.pos,65.0,0.5,0,0,5,1);//コモンゾーンとの干渉回避
+					KUMA_R_L.duty=PID_control_d(350,KUMA_R_L.pos,65.0,0.5,0.01,0,5,1);//コモンゾーンとの干渉回避
 				if(KUMA_THETA_L.pos<90)SERVO_L=SERVO_L_INITIAL;
 				
 				KUMA_THETA_L.duty=duty_limit(KUMA_THETA_L.duty,70);
@@ -136,12 +194,12 @@ void auto_p1_ctrl(void)
 			}
 			else if(maru==0 && sankaku!=0 && shikaku!=0 && batsu==0)
 			{	
-				auto_kuma_l_ctrl(109.8 ,601.9  ,-30   ,SERVO_L_INITIAL+3620);//左フタ
+				auto_kuma_l_ctrl(109.8 ,601.9  ,0.01   ,SERVO_L_INITIAL+3620);//左フタ
 				if(KUMA_THETA_L.pos<45)KUMA_R_L.duty=0;//吉見機構との干渉防止
 			}
 			else if(maru==0 && sankaku!=0 && shikaku==0 && batsu==0)
 			{	
-				auto_kuma_l_ctrl(55.9  ,660.0  ,-30  ,SERVO_L_INITIAL+1800);//左中フタ
+				auto_kuma_l_ctrl(55.9  ,660.0  ,0.01  ,SERVO_L_INITIAL+1800);//左中フタ
 				if(KUMA_THETA_L.pos<45)KUMA_R_L.duty=0;
 			}
 			else kuma_l_zero();
@@ -156,11 +214,11 @@ void auto_p1_ctrl(void)
 				SERVO_L=SERVO_L_INITIAL;
 				auto_kuma_l_ctrl(40.0  ,450.0  ,500.0	,SERVO_L_INITIAL);//まずは安定位置に移動
 				if(ABS(KUMA_THETA_L.pos-40.0)>10.0 || ABS(KUMA_R_L.pos-450)>10 && safe_flag==0)
-					KUMA_Z_L.duty=PID_control_d(0,KUMA_Z_L.pos,50.0,1.5,0,0,5,2);//高さ０でストップ
+					KUMA_Z_L.duty=PID_control_d(0,KUMA_Z_L.pos,50.0,1.25,0.01,0,5,2);//高さ０でストップ
 				else safe_flag=1;
 				
 				if(KUMA_THETA_L.pos>90)
-					KUMA_R_L.duty=PID_control_d(350,KUMA_R_L.pos,50.0,0.5,0,0,5,1);//コモンゾーンとの干渉回避
+					KUMA_R_L.duty=PID_control_d(350,KUMA_R_L.pos,50.0,0.5,0.01,0,5,1);//コモンゾーンとの干渉回避
 			}
 			else if(maru==0 && sankaku==0 && shikaku!=0 && batsu==0)//左
 				auto_kuma_l_ctrl(63.8  ,382.2	,450.2  ,SERVO_L_INITIAL+1980);
@@ -242,23 +300,23 @@ void auto_p2_ctrl(void)
 		{
 			if(maru==0 && snkaku==0 && shikaku!=0 && batsu==0)
 			{
-				auto_kuma_r_ctrl(165.1 ,370.2,-30,SERVO_R_INITIAL-3600);//左下(リミットで干渉は避けてくれるはず)
+				auto_kuma_r_ctrl(165.1 ,370.2,0.01,SERVO_R_INITIAL-3600);//左下(リミットで干渉は避けてくれるはず)
 				KUMA_THETA_R.duty=duty_limit(KUMA_THETA_R.duty,70);
 				KUMA_R_R.duty=duty_limit(KUMA_R_R.duty,30);
 				KUMA_Z_R.duty=duty_limit(KUMA_Z_R.duty,40);
 			}
 			else if(KUMA_Z_R.pos>=100)
 			{
-				auto_kuma_r_ctrl(140.0 ,500.0 ,-30  	,SERVO_R_INITIAL);//下にいる時はとりあえず安定位置へ
+				auto_kuma_r_ctrl(140.0 ,500.0 ,0.01  	,SERVO_R_INITIAL);//下にいる時はとりあえず安定位置へ
 				KUMA_THETA_R.duty=duty_limit(KUMA_THETA_R.duty,70);
 				KUMA_R_R.duty=duty_limit(KUMA_R_R.duty,30);
 				KUMA_Z_R.duty=duty_limit(KUMA_Z_R.duty,40);
 			}
 			else if(maru!=0 && snkaku==0 && shikaku==0 && batsu==0)
 			{
-				auto_kuma_r_ctrl(66.6  ,456.8  ,-30	,SERVO_R_INITIAL-840);//→BOX
+				auto_kuma_r_ctrl(54.3  ,517.6  ,0.01	,SERVO_R_INITIAL-1440);//→BOX
 				if(KUMA_THETA_R.pos<135 && KUMA_THETA_R.pos>90)
-					KUMA_R_R.duty=PID_control_d(350,KUMA_R_R.pos,65.0,0.5,0,0,5,4);//コモンゾーンとの干渉回避
+					KUMA_R_R.duty=PID_control_d(350,KUMA_R_R.pos,65.0,0.5,0.01,0,5,4);//コモンゾーンとの干渉回避
 				if(KUMA_THETA_R.pos>90)SERVO_R=SERVO_R_INITIAL;
 				KUMA_THETA_R.duty=duty_limit(KUMA_THETA_R.duty,70);
 				KUMA_R_R.duty=duty_limit(KUMA_R_R.duty,30);
@@ -266,9 +324,9 @@ void auto_p2_ctrl(void)
 			}
 			else if(maru==0 && snkaku==0 && shikaku==0 && batsu!=0)
 			{
-				auto_kuma_r_ctrl(220.5 ,445.8,0   ,SERVO_R_INITIAL+1260);//↓BOX
+				auto_kuma_r_ctrl(222.5 ,463.7,0.001   ,SERVO_R_INITIAL+780);//↓BOX
 				if(KUMA_THETA_R.pos<135 && KUMA_THETA_R.pos>90)
-					KUMA_R_R.duty=PID_control_d(350,KUMA_R_R.pos,65.0,0.5,0,0,5,4);//コモンゾーンとの干渉回避
+					KUMA_R_R.duty=PID_control_d(350,KUMA_R_R.pos,65.0,0.5,0.01,0,5,4);//コモンゾーンとの干渉回避
 				if(KUMA_THETA_R.pos<180)SERVO_R=SERVO_R_INITIAL;
 				
 				KUMA_THETA_R.duty=duty_limit(KUMA_THETA_R.duty,70);
@@ -277,11 +335,11 @@ void auto_p2_ctrl(void)
 			}
 			else if(maru!=0 && snkaku!=0 && shikaku==0 && batsu==0)
 			{	
-				auto_kuma_r_ctrl(71.6  ,601.9  ,-30   ,SERVO_R_INITIAL-3760);//コモン右
+				auto_kuma_r_ctrl(71.6  ,601.9  ,0.01   ,SERVO_R_INITIAL-3760);//コモン右
 				if(KUMA_THETA_R.pos>135)KUMA_R_R.duty=0;
 			}
 			else if(maru==0 && snkaku!=0 && shikaku==0 && batsu==0)
-			{	auto_kuma_r_ctrl(124.5 ,671.0  ,-30   ,SERVO_R_INITIAL-1900);//コモン右中
+			{	auto_kuma_r_ctrl(124.5 ,671.0  ,0.01   ,SERVO_R_INITIAL-1900);//コモン右中
 				if(KUMA_THETA_R.pos>135)KUMA_R_R.duty=0;
 			}
 			else kuma_r_zero();
@@ -298,11 +356,11 @@ void auto_p2_ctrl(void)
 				auto_kuma_r_ctrl(140.0  ,450.0  ,500.0	,SERVO_R_INITIAL);//まずは安定位置に移動
 				if( ABS(KUMA_THETA_R.pos-140.0)>10.0 || ABS(KUMA_R_R.pos-450)>10 && safe_flag==0)
 				{	
-					KUMA_Z_R.duty=PID_control_d(0,KUMA_Z_R.pos,50.0,1.5,0,0,5,5);
+					KUMA_Z_R.duty=PID_control_d(0,KUMA_Z_R.pos,50.0,1.25,0.01,0,5,5);
 					//R:140.9 ,425.0  ,4.1    ,5140
 				}
 				else safe_flag=1;			
-				if(KUMA_THETA_R.pos<90)KUMA_R_R.duty=PID_control_d(350,KUMA_R_R.pos,50.0,0.5,0,0,5,4);//コモンゾーンとの干渉回避
+				if(KUMA_THETA_R.pos<90)KUMA_R_R.duty=PID_control_d(350,KUMA_R_R.pos,50.0,1.25,0.01,0,5,4);//コモンゾーンとの干渉回避
 				
 			}
 			else if(maru!=0 && snkaku==0 && shikaku==0 && batsu==0)
@@ -319,14 +377,12 @@ void auto_p2_ctrl(void)
 				auto_kuma_r_ctrl(165.1 ,440.2  ,450.2  ,SERVO_R_INITIAL-3600);//左下
 			else 
 			{
-				
-				safe_flag=0;
 				kuma_r_zero();
 			}
 		}
 		else
 		{
-			start_flag=0;
+			if(PS_BTN_(R3)==0)start_flag=0;
 			kuma_r_zero();
 		}
 	}
@@ -365,8 +421,8 @@ void auto_kuma_l_ctrl(double theta,double r,double z,int servo)
 		diff_z=10.0;
 			
 	KUMA_THETA_L.duty=PID_control_d(theta,KUMA_THETA_L.pos,100.0,5.0,0,0,0.5,0);
-	KUMA_R_L.duty=PID_control_d(r,KUMA_R_L.pos,50.0,0.35,0,0,5,1);
-	KUMA_Z_L.duty=PID_control_d(z,KUMA_Z_L.pos,50.0,0.75,0,0,5,2);
+	KUMA_R_L.duty=PID_control_d(r,KUMA_R_L.pos,50.0,0.25,0.01,0,5,1);
+	KUMA_Z_L.duty=PID_control_d(z,KUMA_Z_L.pos,50.0,0.65,0.01,0,5,2);
 	SERVO_L=servo;
 	
 	//if(ABS(KUMA_THETA_L.pos-theta)<diff_theta)KUMA_THETA_L.duty=0;
@@ -385,8 +441,8 @@ void auto_kuma_r_ctrl(double theta,double r,double z,int servo)
 		diff_z=10.0;
 			
 	KUMA_THETA_R.duty=PID_control_d(theta,KUMA_THETA_R.pos,100.0,5.0,0,0,0.5,3);
-	KUMA_R_R.duty=PID_control_d(r,KUMA_R_R.pos,70.0,0.65,0,0,5,4);
-	KUMA_Z_R.duty=PID_control_d(z,KUMA_Z_R.pos,50.0,1.25,0,0,5,5);
+	KUMA_R_R.duty=PID_control_d(r,KUMA_R_R.pos,70.0,0.55,0.01,0,5,4);
+	KUMA_Z_R.duty=PID_control_d(z,KUMA_Z_R.pos,50.0,0.95,0.01,0,5,5);
 	SERVO_R=servo;
 	
 	//if(ABS(KUMA_THETA_R.pos-theta)<diff_theta)KUMA_THETA_R.duty=0;
