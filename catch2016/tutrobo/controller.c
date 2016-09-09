@@ -697,7 +697,7 @@ void	uo_limit(void)
 void	yoshi_limit(void)
 {
 	if(YOSHI.pos<=2 && YOSHI.duty<0)YOSHI.duty=0;
-	if(YOSHI.pos>=415.0 && YOSHI.duty>0)YOSHI.duty=-10;
+	if(YOSHI.pos>=405.0 && YOSHI.duty>0)YOSHI.duty=-10;
 }
 
 
