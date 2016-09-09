@@ -208,8 +208,19 @@ void auto_p1_ctrl(void)
 		else if(D_direction_D!=0)//下の経路
 		{
 			static int safe_flag=0;
-			
-			if(KUMA_Z_L.pos<=250)
+			static int temae_flag=0;
+			if(maru==0 && sankaku==0 && shikaku==0 && batsu!=0)//右下の真上で下ろす
+			{
+				if(KUMA_Z_L.pos<=250)
+				{
+					if(temae_flag==0)auto_kuma_l_ctrl(14.8  ,399.9  ,0  ,SERVO_L_INITIAL+3540);//450.2
+					if(ABS(KUMA_THETA_L.pos-14.8)<5.0 && ABS(KUMA_R_L.pos-449.9)<10 && temae_flag==0)temae_flag=1;					
+				}
+				else temae_flag=1;
+				
+				if(temae_flag==1)auto_kuma_l_ctrl(14.8  ,399.9  ,450.2  ,SERVO_L_INITIAL+3540);
+			}
+			else if(KUMA_Z_L.pos<=250)
 			{
 				SERVO_L=SERVO_L_INITIAL;
 				auto_kuma_l_ctrl(40.0  ,450.0  ,500.0	,SERVO_L_INITIAL);//まずは安定位置に移動
@@ -229,12 +240,13 @@ void auto_p1_ctrl(void)
 			else if(maru!=0 && sankaku==0 && shikaku==0 && batsu==0)//右
 				auto_kuma_l_ctrl(28.2  ,672.4  ,450.2  ,SERVO_L_INITIAL+360);
 			else if(maru!=0 && sankaku==0 && shikaku==0 && batsu!=0)//右下
-				auto_kuma_l_ctrl(14.8  ,449.9  ,450.2  ,SERVO_L_INITIAL+3540);
+				auto_kuma_l_ctrl(14.8  ,449.9  ,450.2  ,SERVO_L_INITIAL+3540);			
 			else if(maru==0 && sankaku==0 && shikaku!=0 && batsu!=0)//左下
 				auto_kuma_l_ctrl(47.5  ,304.8  ,450.2  ,SERVO_L_INITIAL-1653);
 			else 
 			{
 				safe_flag=0;
+				temae_flag=0;
 				kuma_l_zero();
 			}
 		}
@@ -484,7 +496,7 @@ void auto_yoshi_ctrl(double aim)
 {
 	const double stop_area=15.0;
 	
-	YOSHI.duty=PID_control_d(aim,YOSHI.pos,100.0,1.0,0,0,0.5,9);
+	YOSHI.duty=PID_control_d(aim,YOSHI.pos,100.0,1.0,0,0,1.1,9);
 	//if(ABS(YOSHI.pos-aim)<stop_area)YOSHI.duty=0;
 	
 	YOSHI.mode=AUTO_MODE;

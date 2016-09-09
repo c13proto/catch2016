@@ -667,14 +667,14 @@ void kuma_limit(void)
 	if(KUMA_Z_L.pos<=70.0 && PSCON_PRE_R1==0)//zアーム縁と取付台干渉防止
 	{
 		if((KUMA_THETA_L.pos<10.0 || KUMA_THETA_L.pos>80.0)&&KUMA_Z_L.duty>0 )KUMA_Z_L.duty=0;
-		if(KUMA_R_L.pos<400.0 && KUMA_Z_L.duty>0)KUMA_Z_L.duty=0;
+		if(KUMA_R_L.pos<390.9 && KUMA_Z_L.duty>0)KUMA_Z_L.duty=0;
 		if(ABS(KUMA_POS_LX)<250 && ABS(KUMA_POS_LY)<300 && KUMA_Z_L.duty>0)KUMA_Z_L.duty=0;//y300,x250
 		
 	}
 	if(KUMA_Z_R.pos<=70.0 && PSCON_PRE_R1_==0)
 	{
 		if((KUMA_THETA_R.pos<100.0 || KUMA_THETA_R.pos>170.0)&&KUMA_Z_R.duty>0 )KUMA_Z_R.duty=0;
-		if(KUMA_R_R.pos<400.0 && KUMA_Z_R.duty>0)KUMA_Z_R.duty=0;
+		if(KUMA_R_R.pos<390.9 && KUMA_Z_R.duty>0)KUMA_Z_R.duty=0;
 		if(ABS(KUMA_POS_RX)<250 && ABS(KUMA_POS_RY)<300 && KUMA_Z_R.duty>0)KUMA_Z_R.duty=0;//y300,x250
 	}
 	//コモンゾーン↑のやつとファンの干渉防止
@@ -696,8 +696,17 @@ void	uo_limit(void)
 }
 void	yoshi_limit(void)
 {
+	static int invade_counter=0;
+	
 	if(YOSHI.pos<=2 && YOSHI.duty<0)YOSHI.duty=0;
-	if(YOSHI.pos>=405.0 && YOSHI.duty>0)YOSHI.duty=-10;
+	if(YOSHI.pos>=405.0)invade_counter++;
+	if(invade_counter==1 && YOSHI.duty>=99)
+	{
+		auto_yoshi_ctrl(424.2);
+		invade_counter=0;
+	}
+	
+	if(YOSHI.pos>305 && YOSHI.duty>0 && invade_counter>0)YOSHI.duty=0;
 }
 
 
