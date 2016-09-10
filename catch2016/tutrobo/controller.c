@@ -167,9 +167,16 @@ void recieve_data_input(void)
 
 	if(pscon_err_flag==0)
 	{
-		PSCON_SW=ON;
+		static int wait_counter=0;
+		const int wait_time=20;//0.2sec‘Ò‹@(“®ì‚ðˆÀ’è‚³‚¹‚é‚½‚ß)
 		
-		set_duty();//	’l‚ðduty‚É•ÏŠ·
+		if(wait_counter>wait_time)
+		{
+			PSCON_SW=ON;		
+			set_duty();//	’l‚ðduty‚É•ÏŠ·
+		}
+		
+		if(wait_counter<wait_time+10)wait_counter++;
 	}
 	else
 	{ 
@@ -699,10 +706,10 @@ void	yoshi_limit(void)
 	static int invade_counter=0;
 	
 	if(YOSHI.pos<=2 && YOSHI.duty<0)YOSHI.duty=0;
-	if(YOSHI.pos>=405.0)invade_counter++;
+	if(YOSHI.pos>=395.0)invade_counter++;
 	if(invade_counter==1 && YOSHI.duty>=99)
 	{
-		auto_yoshi_ctrl(424.2);
+		auto_yoshi_ctrl(YOSHI_INVADE_POS);//414.2
 		invade_counter=0;
 	}
 	

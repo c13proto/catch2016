@@ -35,7 +35,7 @@ void auto_p1_ctrl(void)
 				B_U2=OFF;//低速モードOFF
 			}
 			
-			auto_yoshi_ctrl(353.77);//吉見機構落ちない位置まで移動
+			auto_yoshi_ctrl(YOSHI_FINAL);//吉見機構落ちない位置まで移動,353.77
 			if(LED_RED==ON)
 			{
 				//auto_toku_l_ctrl(371.4);//徳山取る直前まで移動
@@ -106,7 +106,7 @@ void auto_p1_ctrl(void)
 				B_U2=OFF;//低速モードOFF
 			}
 			
-			auto_yoshi_ctrl(353.77);//吉見機構落ちない位置まで移動
+			auto_yoshi_ctrl(YOSHI_FINAL);//吉見機構落ちない位置まで移動
 			
 			if(LED_RED==ON)
 			{

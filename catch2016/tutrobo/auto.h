@@ -11,3 +11,4 @@ void auto_uo_ctrl(double aim,double max_duty,double p_gain);
 void kuma_l_zero(void);
 void kuma_r_zero(void);
 
+#define YOSHI_FINAL 353.77

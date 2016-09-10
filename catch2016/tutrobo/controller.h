@@ -90,14 +90,15 @@ extern double DEBUG[5];
 #define THETA_R_INITIAL 180.0//
 #define R_L_INITIAL 110.0//初期位置[mm]
 #define R_R_INITIAL 110.0
-#define AD_THETA_L_INITIAL 468//ad初期値
-#define AD_THETA_R_INITIAL 561//ad初期値
+#define AD_THETA_L_INITIAL 442//ad初期値
+#define AD_THETA_R_INITIAL 571//ad初期値
 #define	AD_R_L_INITIAL 148//
-#define	AD_R_R_INITIAL 913//
+#define	AD_R_R_INITIAL 915//
 #define AD_Z_L_INITIAL 447
-#define AD_Z_R_INITIAL 125
+#define AD_Z_R_INITIAL 123
 
 #define AD_YOSHI_INITIAL 540
+#define YOSHI_INVADE_POS 414.2//吉見機構侵入エリア
 
 #define SERVO_L_INITIAL 2940
 #define SERVO_R_INITIAL 5140
